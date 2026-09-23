@@ -311,16 +311,11 @@
   <section class="section">
     <div class="kicker">07 · 技术架构</div>
     <div class="title">分层解耦，移动云底座</div>
-    <div class="arch" style="margin-top:16px;">Web 前端( Vue ) <span class="gr">─────▶</span> 平台后端( Spring Boot / Java )
+    <div class="arch" style="margin-top:16px;">Web 前端( Vue 3 ) <span class="gr">─────▶</span> 平台后端( FastAPI / Python，模块化单体 )
   ├─ 用户 / 课程 / 班级 / 权限
   ├─ <span class="hl">评测引擎</span>( 判分 / 评分细则 / <span class="vi">沙箱</span> )
-  ├─ <span class="hl">认知诊断服务</span>( 误区识别 / 学情画像 )
-  └─ 报告与看板
-          <span class="gr">│</span>
-        Python 分析 / Agent 服务
-  ├─ 代码解析、编译错误提取
-  ├─ <span class="hl">误区诊断</span> &amp; <span class="hl">变式题生成</span>
-  └─ 题库 / 学情数据
+  ├─ <span class="hl">诊断 / 变式 / 命题</span>( 模块内调 MoMA )
+  └─ 学情报告与看板
           <span class="gr">│</span>
   移动云底座：<span class="vi">MoMA 模型</span> · 对象存储 · 云主机( 部署演示 )</div>
   </section>
@@ -332,8 +327,8 @@
       <div class="card">
         <h3>技术栈</h3>
         <ul>
-          <li>后端：<b>Spring Boot 3 / Java 21</b>（平台业务、评测调度）</li>
-          <li>诊断与生成：<b>Python + 大模型（移动云 MoMA）</b></li>
+          <li>后端：<b>FastAPI / Python</b>（模块化单体 + DDD，平台业务、评测调度）</li>
+          <li>模型：<b>移动云 MoMA</b>（诊断 / 变式 / 命题，单体内调用）</li>
           <li>前端：<b>Vue 3</b>（误区分布图、学情看板）</li>
           <li>执行：<b>安全沙箱</b>（代码隔离）</li>
           <li>数据：<b>数据库 + 对象存储</b>（用户、题目、用例、报告、附件）</li>
