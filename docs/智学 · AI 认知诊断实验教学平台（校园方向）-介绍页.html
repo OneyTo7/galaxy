@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智学 · AI 认知诊断实验教学平台</title>
+<style>
+  :root {
+    --bg: #0b1020; --card: #141a2e; --card2: #1a2240; --line: rgba(255,255,255,.08);
+    --txt: #e7ecf5; --sub: #9aa6bd; --violet: #7c6bff; --blue: #38bdf8;
+    --green: #34d399; --orange: #fbbf24; --pink: #f472b6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", Segoe UI, sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, #171e3d 0%, var(--bg) 55%);
+    color: var(--txt); line-height: 1.65; padding: 40px 20px 60px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+
+  /* Hero */
+  .hero { text-align:center; padding: 24px 10px 34px; }
+  .hero .badge { display:inline-block; padding:6px 16px; border-radius:999px; border:1px solid var(--line);
+    background:rgba(255,255,255,.04); color:var(--sub); font-size:13px; letter-spacing:2px; margin-bottom:16px; }
+  .hero h1 { font-size: clamp(28px,5vw,46px); font-weight:800; letter-spacing:1px;
+    background:linear-gradient(90deg,var(--violet),var(--blue)); -webkit-background-clip:text; background-clip:text;
+    color:transparent; margin-bottom:12px; }
+  .hero .tagline { font-size:clamp(16px,2.4vw,22px); font-weight:600; }
+  .hero .sub { color:var(--sub); max-width:760px; margin:14px auto 0; font-size:15px; }
+  .pills { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:22px; }
+  .pills span { padding:8px 16px; border-radius:12px; font-size:13px; color:var(--sub);
+    border:1px solid var(--line); background:var(--card); }
+
+  .section { margin-top:44px; }
+  .kicker { color:var(--blue); font-size:13px; letter-spacing:1px; font-weight:700; }
+  .section .title { font-size:24px; font-weight:700; margin-bottom:6px; }
+  .section .desc { color:var(--sub); font-size:14px; margin-bottom:20px; }
+
+  /* Pain */
+  .pains { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+  .pain { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .pain .n { font-size:15px; font-weight:700; color:var(--orange); margin-bottom:6px; }
+  .pain p { font-size:14px; color:var(--sub); }
+
+  /* Flow */
+  .flow { display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; justify-content:center; }
+  .step { flex:1 1 150px; min-width:150px; background:var(--card); border:1px solid var(--line);
+    border-radius:16px; padding:16px 12px; text-align:center; transition:transform .2s,border-color .2s; }
+  .step:hover { transform:translateY(-4px); border-color:var(--blue); }
+  .step .ic { font-size:26px; margin-bottom:6px; }
+  .step .n { font-size:12px; color:var(--violet); font-weight:700; }
+  .step .t { font-weight:700; margin-top:2px; font-size:15px; }
+  .step .d { font-size:12px; color:var(--sub); margin-top:6px; }
+  .arrow { align-self:center; color:var(--blue); font-size:20px; flex:0 0 auto; }
+
+  /* Roles */
+  .roles { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
+  .role { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; }
+  .role .h { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .role .ic { font-size:24px; }
+  .role .name { font-size:18px; font-weight:700; }
+  .role .who { font-size:12px; color:var(--sub); }
+  .role ul { list-style:none; }
+  .role li { font-size:13.5px; padding:6px 0 6px 20px; position:relative; color:var(--txt); }
+  .role li::before { content:"▸"; position:absolute; left:2px; color:var(--blue); }
+  .role li b { color:var(--txt); }
+  .role.stu { border-top:3px solid var(--blue); }
+  .role.tea { border-top:3px solid var(--violet); }
+  .role.adm { border-top:3px solid var(--green); }
+
+  /* Innovation */
+  .innov { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+  .box { background:linear-gradient(160deg,var(--card2),var(--card)); border:1px solid var(--line);
+    border-radius:18px; padding:22px; }
+  .box .tag { display:inline-block; font-size:12px; padding:4px 12px; border-radius:999px;
+    background:rgba(124,107,255,.15); color:var(--violet); font-weight:700; margin-bottom:12px; }
+  .box.blue .tag { background:rgba(56,189,248,.15); color:var(--blue); }
+  .box h3 { font-size:18px; margin-bottom:8px; }
+  .box p { font-size:14px; color:var(--sub); }
+  .box .ex { font-size:13px; background:rgba(255,255,255,.03); border:1px dashed var(--line);
+    border-radius:10px; padding:10px; margin-top:12px; color:var(--txt); }
+  .box .ex b { color:var(--pink); }
+  .vs { display:flex; align-items:center; gap:10px; margin-top:14px; }
+  .chip { flex:1; text-align:center; padding:10px; border-radius:12px; font-size:13px; }
+  .chip.old { background:rgba(251,191,36,.08); color:var(--orange); }
+  .chip.new { background:rgba(52,211,153,.1); color:var(--green); font-weight:700; }
+  .vs .arr { color:var(--sub); }
+
+  /* Permission table */
+  .tblwrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:6px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; min-width:560px; }
+  th, td { padding:11px 14px; text-align:left; border-bottom:1px solid var(--line); }
+  th { color:var(--sub); font-weight:600; background:rgba(255,255,255,.02); }
+  td.y { color:var(--green); font-weight:700; }
+  td.n { color:var(--sub); }
+  tr:last-child td { border-bottom:none; }
+
+  /* States */
+  .states { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; }
+  .state { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .state .h { font-weight:700; margin-bottom:10px; color:var(--blue); }
+  .state .chain { font-size:13px; color:var(--txt); line-height:1.9; }
+  .state .chain b { color:var(--txt); }
+  .state .chain i { color:var(--blue); font-style:normal; margin:0 35px; }
+
+  /* Capabilities */
+  .caps { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
+  .cap { background:var(--card2); border:1px solid var(--line); border-radius:14px; padding:16px;
+    border-top:3px solid var(--blue); }
+  .cap h4 { font-size:15px; margin-bottom:6px; }
+  .cap p { font-size:13px; color:var(--sub); }
+
+  /* Architecture */
+  .arch { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; line-height:1.8;
+    overflow-x:auto; white-space:pre; color:var(--txt); }
+  .arch .hl { color:var(--blue); }
+  .arch .gr { color:var(--green); }
+  .arch .vi { color:var(--violet); }
+
+  /* Stack / Zhanlu */
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; }
+  .card h3 { font-size:16px; margin-bottom:14px; }
+  .card ul { list-style:none; }
+  .card li { font-size:14px; padding:7px 0 7px 20px; position:relative; }
+  .card li::before { content:"•"; position:absolute; left:2px; color:var(--blue); }
+  .card li b { color:var(--txt); }
+
+  .banner { background:linear-gradient(120deg, rgba(124,107,255,.12), rgba(56,189,248,.1));
+    border:1px solid var(--line); border-radius:18px; padding:28px; text-align:center; margin-top:44px; }
+  .banner h3 { font-size:22px; margin-bottom:8px; }
+  .banner p { color:var(--sub); font-size:15px; max-width:760px; margin:0 auto; }
+
+  .foot { text-align:center; color:var(--sub); font-size:13px; margin-top:34px; opacity:.75; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <span class="badge">2026 移动云杯 · AI Coding 赛道</span>
+    <h1>智学 · AI 认知诊断实验教学平台</h1>
+    <div class="tagline">让老师看见学生「怎么错」，让学生知道「该练什么」</div>
+    <p class="sub">面向高校编程 / AI / 数据课程的实验教学平台。不是又一个「判题 + 答疑」系统，而是从「判对错」升级到「洞察你为什么错、卡在哪个点」，并给出针对性的变式练习，达到院校级可用标准。</p>
+    <div class="pills">
+      <span>🏫 校园场景方向</span>
+      <span>🧠 解释性认知诊断</span>
+      <span>🔄 AI 贯穿全流程</span>
+      <span>🔒 沙箱安全执行</span>
+      <span>🛡️ 反作弊 / AI 代写检测</span>
+      <span>📋 申诉 / 权限 / 合规</span>
+    </div>
+  </header>
+
+  <!-- PAIN -->
+  <section class="section">
+    <div class="kicker">01 · 要解决的问题</div>
+    <div class="title">教学里的三个真实痛点</div>
+    <div class="pains" style="margin-top:16px;">
+      <div class="pain"><div class="n">痛点一：认知盲区</div><p>老师只能看到学生「这题错了」，看不到他为什么错、卡在哪个知识点上，教学缺乏针对。</p></div>
+      <div class="pain"><div class="n">痛点二：人手不足</div><p>编程、AI 课选课人多，助教不够，老师没精力逐个答疑、逐个盯进度。</p></div>
+      <div class="pain"><div class="n">痛点三：平台太浅</div><p>市面教学平台大多停在「判分 + 答疑」，说不清学生具体哪里没掌握，也管不好成绩与反作弊。</p></div>
+    </div>
+  </section>
+
+  <!-- FLOW -->
+  <section class="section">
+    <div class="kicker">02 · 教学主链路</div>
+    <div class="title">一条主链路，AI 贯穿到底</div>
+    <div class="desc">从老师命题到学生学情，全流程自动化闭环</div>
+    <div class="flow">
+      <div class="step"><div class="ic">📝</div><div class="n">STEP 1</div><div class="t">智能命题</div><div class="d">一句话生成题面、评分标准、参考实现</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="ic">💻</div><div class="n">STEP 2</div><div class="t">沙箱提交</div><div class="d">在线写代码，隔离沙箱中安全运行</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="ic">🧪</div><div class="n">STEP 3</div><div class="t">严格评测</div><div class="d">隐藏用例、边界、超时，不只看样例</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="ic">🔍</div><div class="n">STEP 4</div><div class="t">误区诊断</div><div class="d">指出「你怎么错的」+ 证据 + 知识点</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="ic">🎯</div><div class="n">STEP 5</div><div class="t">变式练习</div><div class="d">针对误区实时生成换情境的新题</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="ic">📊</div><div class="n">STEP 6</div><div class="t">学情报告</div><div class="d">班级误区图谱、学情画像、预警</div></div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="section">
+    <div class="kicker">03 · 谁在用</div>
+    <div class="title">三个视角，同一份数据</div>
+    <div class="desc">按角色分工，权限清晰隔离</div>
+    <div class="roles">
+      <div class="role stu">
+        <div class="h"><div class="ic">🎓</div><div class="name">学生端</div><div class="who">完成实验 · 获得反馈</div></div>
+        <ul>
+          <li>在线写代码（沙箱运行），支持多次提交与历史查看</li>
+          <li>即时评测：对错 / 得分 / 每个用例的明细</li>
+          <li><b>误区诊断反馈</b>：为什么错 + 对应知识点</li>
+          <li><b>动态变式练习</b>：针对自己的误区刷题</li>
+          <li>AI 助教答疑、个人学习画像、成绩查看</li>
+          <li>对评分有异议可提交申诉</li>
+        </ul>
+      </div>
+      <div class="role tea">
+        <div class="h"><div class="ic">👩‍🏫</div><div class="name">教师端</div><div class="who">命题 · 干预 · 管理</div></div>
+        <ul>
+          <li>一句话出题，配置用例与评分细则</li>
+          <li>查看本课提交与评测结果</li>
+          <li><b>班级误区图谱</b>：全班卡在哪类误区</li>
+          <li>学情画像、薄弱点、挂科预警、教学策略建议</li>
+          <li>反作弊 / AI 代写检测报告</li>
+          <li>申诉终审、人工改分、成绩报表导出</li>
+        </ul>
+      </div>
+      <div class="role adm">
+        <div class="h"><div class="ic">🏛️</div><div class="name">助教 / 教务 / 管理</div><div class="who">协作 · 运营 · 合规</div></div>
+        <ul>
+          <li>助教（受授权）：批改、复核、处理申诉</li>
+          <li>教务：跨课程质量看板（数据脱敏）</li>
+          <li>管理员：用户 / 角色 / 配额、成本与用量</li>
+          <li>审计日志、隐私与数据合规</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- INNOVATION -->
+  <section class="section">
+    <div class="kicker">04 · 核心创新</div>
+    <div class="title">教育 AI 不新鲜，我们靠「功能新颖」拉开差距</div>
+    <div class="innov" style="margin-top:16px;">
+      <div class="box">
+        <span class="tag">核心创新 · 误区诊断</span>
+        <h3>解释性误区诊断</h3>
+        <p>让模型读学生代码 + 编译/运行报错，做结构化归因，输出「误区类型 + 证据 + 对应知识点」，而不仅是给个标准答案。</p>
+        <div class="ex">示例：<b>「你总忘记边界条件，比如空指针 / 极端输入，建议先做防御式判断」</b></div>
+        <div class="vs">
+          <div class="chip old">普通平台：你错了 / 给标准答案</div>
+          <div class="arr">→</div>
+          <div class="chip new">我们：你怎么错的、卡在哪个点</div>
+        </div>
+      </div>
+      <div class="box blue">
+        <span class="tag">核心创新 · 个性化</span>
+        <h3>动态变式练习</h3>
+        <p>根据学生自己的误区，<b>实时生成换过情境的变式题</b>，对症下药，而不是从静态题库里抽一道差不多的。</p>
+        <div class="ex">示例：同一个「数组越界」误区，换成<b>「矩阵遍历」「链表遍历」</b>等不同情境再练一遍</div>
+        <div class="vs">
+          <div class="chip old">静态题库：推荐同类题</div>
+          <div class="arr">→</div>
+          <div class="chip new">动态生成：专门治你这个错</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CROSS-ROLE -->
+  <section class="section">
+    <div class="kicker">05 · 跨端设计</div>
+    <div class="title">角色、权限与业务流程</div>
+    <div class="desc">同一个系统，权限边界清晰，关键流程用状态机约束</div>
+
+    <div class="kicker" style="margin:22px 0 10px;">权限矩阵</div>
+    <div class="tblwrap">
+      <table>
+        <tr><th>数据 / 操作</th><th>学生</th><th>助教</th><th>教师</th><th>教务 / 管理</th></tr>
+        <tr><td>自己的提交 / 成绩 / 诊断</td><td class="y">✅ 看</td><td>本班看</td><td>本课看</td><td class="n">✖</td></tr>
+        <tr><td>他人成绩</td><td class="n">✖</td><td>本班看</td><td>本课看</td><td>全校看(脱敏)</td></tr>
+        <tr><td>命题 / 用例 / 评分细则</td><td class="n">✖</td><td class="n">✖</td><td>本课改</td><td class="n">✖</td></tr>
+        <tr><td>评改 / 复核</td><td class="n">✖</td><td>✅(受授权)</td><td class="y">✅</td><td class="n">✖</td></tr>
+        <tr><td>反作弊报告</td><td class="n">✖</td><td>本班</td><td>本课</td><td>全校</td></tr>
+        <tr><td>处理申诉</td><td class="n">✖</td><td>✅</td><td class="y">✅ 终审</td><td class="n">✖</td></tr>
+        <tr><td>系统配置 / 配额 / 权限</td><td class="n">✖</td><td class="n">✖</td><td class="n">✖</td><td class="y">✅</td></tr>
+      </table>
+    </div>
+
+    <div class="kicker" style="margin:22px 0 10px;">关键状态流转</div>
+    <div class="states">
+      <div class="state">
+        <div class="h">作业状态机</div>
+        <div class="chain">草稿 <i>·</i> 已发布 <i>·</i> 进行中 <i>·</i> 已截止 <i>·</i> 评测/评分中 <i>·</i> 成绩已发布 <i>·</i> 已归档</div>
+      </div>
+      <div class="state">
+        <div class="h">提交状态机</div>
+        <div class="chain">待评测 <i>·</i> 评测中 <i>·</i> 已完成(自动判) <i>·</i> 待人工复核</div>
+      </div>
+      <div class="state">
+        <div class="h">申诉状态机</div>
+        <div class="chain">已提交 <i>·</i> 处理中 <i>·</i> 已处理(改分 → 更新成绩 → 通知学生)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES -->
+  <section class="section">
+    <div class="kicker">06 · 院校级能力</div>
+    <div class="title">不是演示原型，是能真开课用的系统</div>
+    <div class="caps" style="margin-top:16px;">
+      <div class="cap"><h4>🔒 安全沙箱</h4><p>隔离学生代码执行，防恶意代码、死循环、越权与资源耗尽。</p></div>
+      <div class="cap"><h4>🧪 严格判定</h4><p>隐藏用例 + 边界 + 超时判定，不「过了样例就算对」。</p></div>
+      <div class="cap"><h4>📋 申诉复核</h4><p>评分可申诉、可人工复核改分，且全程留依据。</p></div>
+      <div class="cap"><h4>📊 成绩管理</h4><p>课程/班级/助教/成绩册、deadline、晚交策略、期末导出。</p></div>
+      <div class="cap"><h4>🛡️ 反作弊</h4><p>AI 代写检测 + 抄袭查重 + 答题过程异常识别。</p></div>
+      <div class="cap"><h4>🛡️ 隐私合规</h4><p>数据脱敏、分级权限、审计日志，符合教育数据保护要求。</p></div>
+      <div class="cap"><h4>🚀 真实部署验证</h4><p>云主机部署、真实课程试点验证主链路，非纯原型。</p></div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="section">
+    <div class="kicker">07 · 技术架构</div>
+    <div class="title">分层解耦，移动云底座</div>
+    <div class="arch" style="margin-top:16px;">Web 前端( Vue ) <span class="gr">─────▶</span> 平台后端( Spring Boot / Java )
+  ├─ 用户 / 课程 / 班级 / 权限
+  ├─ <span class="hl">评测引擎</span>( 判分 / 评分细则 / <span class="vi">沙箱</span> )
+  ├─ <span class="hl">认知诊断服务</span>( 误区识别 / 学情画像 )
+  └─ 报告与看板
+          <span class="gr">│</span>
+        Python 分析 / Agent 服务
+  ├─ 代码解析、编译错误提取
+  ├─ <span class="hl">误区诊断</span> &amp; <span class="hl">变式题生成</span>
+  └─ 题库 / 学情数据
+          <span class="gr">│</span>
+  移动云底座：<span class="vi">MoMA 模型</span> · 对象存储 · 云主机( 部署演示 )</div>
+  </section>
+
+  <!-- STACK & ZHANLU -->
+  <section class="section">
+    <div class="kicker">08 · 技术栈 · 湛卢运用</div>
+    <div class="grid2" style="margin-top:16px;">
+      <div class="card">
+        <h3>技术栈</h3>
+        <ul>
+          <li>后端：<b>Spring Boot 3 / Java 21</b>（平台业务、评测调度）</li>
+          <li>诊断与生成：<b>Python + 大模型（移动云 MoMA）</b></li>
+          <li>前端：<b>Vue 3</b>（误区分布图、学情看板）</li>
+          <li>执行：<b>安全沙箱</b>（代码隔离）</li>
+          <li>数据：<b>数据库 + 对象存储</b>（用户、题目、用例、报告、附件）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>湛卢 IDE 能力运用</h3>
+        <ul>
+          <li><b>代码生成</b>：脚手架、命题、评测引擎、变式生成</li>
+          <li><b>智能调试 / 代码评审</b>：评测与诊断链路、沙箱安全</li>
+          <li><b>单元测试 / Bug 修复</b>：核心逻辑可验证、可回归</li>
+          <li><b>Skill / MCP / 自定义流程</b>：命题评测 Skill、接对象存储与模型、沉淀可复用开发范式</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALUE -->
+  <section class="section">
+    <div class="kicker">09 · 应用价值</div>
+    <div class="title">为什么值得做</div>
+    <div class="grid2" style="margin-top:16px;">
+      <div class="card"><h3>对老师</h3><ul><li>从「看对错」到「看见怎么错」，教学更有针对性</li><li>一句话出题、自动评测，省下大量重复劳动</li><li>学情画像与预警，提前干预掉队学生</li></ul></div>
+      <div class="card"><h3>对学生</h3><ul><li>出错即时获得「为什么错 + 该练什么」</li><li>针对个性误区的变式练习，学得更扎实</li><li>AI 助教随时答疑，不再卡壳</li></ul></div>
+    </div>
+    <div class="banner">
+      <h3>面向 AI 通识课正在铺开的高校</h3>
+      <p>面向各类高校——985/211、普通本科、高职——的编程与 AI 课程。系统具备跨课程、跨院系复用能力，落地从最需要的院校试点、逐步推广，可校级推广、上云部署。</p>
+      <p style="margin-top:10px;">一期跑通「命题→沙箱→评测→诊断→变式→学情」主链路，二期补反作弊 / 申诉 / 合规；全流程用湛卢 IDE 开发，沉淀「评测 + 诊断 + 变式」可复用的教学后端开发范式。</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    智学 · AI 认知诊断实验教学平台 —— 全流程使用湛卢 IDE 开发 · 模型走移动云 MoMA · 云主机部署演示
+  </footer>
+</div>
+</body>
+</html>
