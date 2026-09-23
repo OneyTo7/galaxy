@@ -67,7 +67,7 @@
 
 | 用途 | 选型 | 备注 |
 | --- | --- | --- |
-| 框架 | Vue 3（`<script setup>` + Composition API） | 队长骨架；冰糖沿用 |
+| 框架 | Vue 3 + TypeScript（`<script setup>` + Composition API） | 队长骨架；冰糖沿用 |
 | 构建 | Vite | `npm create vue@latest` |
 | 状态 | Pinia | 用户 / 课程 / 提交 |
 | 路由 | Vue Router | 学生 / 教师 / 管理三布局 |
