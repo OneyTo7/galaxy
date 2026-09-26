@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: ./backend
+    container_name: galaxy-backend
+    ports:
+      - "8000:8000"
+    env_file: ./backend/.env
+    restart: unless-stopped
+
+  worker:
+    build: ./backend
+    container_name: galaxy-worker
+    command: python -m app.worker
+    env_file: ./backend/.env
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  # frontend（待前端骨架完成后启用）
+  # frontend:
+  #   build: ./frontend
+  #   container_name: galaxy-frontend
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - backend
+  #   restart: unless-stopped
