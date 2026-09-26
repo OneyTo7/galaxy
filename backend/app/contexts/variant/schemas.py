@@ -17,8 +17,7 @@ class VariantOut(BaseModel):
     lang: str
 
 
-@dataclass(frozen=True)
-class VariantResult:
+class VariantResult(BaseModel):
     title: str
     description: str
     cases: list

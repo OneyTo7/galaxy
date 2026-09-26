@@ -19,8 +19,7 @@ class MisconceptionOut(DiagnoseOut):
     created_at: datetime
 
 
-@dataclass(frozen=True)
-class GenerateResult:
+class GenerateResult(BaseModel):
     misconception_type: str
     evidence: str
     knowledge_point: str
