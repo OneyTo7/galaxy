@@ -21,6 +21,7 @@ import app.contexts.variant.models  # noqa: E402,F401
 import app.contexts.organization.models  # noqa: E402,F401
 import app.contexts.appeal.models  # noqa: E402,F401
 import app.contexts.cheating.models  # noqa: E402,F401
+import app.contexts.grade.models  # noqa: E402,F401
 
 config = context.config
 

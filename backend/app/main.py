@@ -8,6 +8,7 @@ from app.contexts.appeal.router import router as appeal_router
 from app.contexts.assignment.router import router as assignment_router
 from app.contexts.cheating.router import router as cheating_router
 from app.contexts.diagnose.router import router as diagnose_router
+from app.contexts.grade.router import router as grade_router
 from app.contexts.organization.router import router as organization_router
 from app.contexts.report.router import router as report_router
 from app.contexts.submission.router import router as submission_router
@@ -44,6 +45,7 @@ app.include_router(report_router)
 app.include_router(organization_router)
 app.include_router(appeal_router)
 app.include_router(cheating_router)
+app.include_router(grade_router)
 
 
 @app.get("/health", tags=["health"])
