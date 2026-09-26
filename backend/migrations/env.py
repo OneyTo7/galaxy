@@ -17,6 +17,7 @@ import app.contexts.assignment.models  # noqa: E402,F401
 import app.contexts.submission.models  # noqa: E402,F401
 import app.contexts.diagnose.models  # noqa: E402,F401
 import app.contexts.variant.models  # noqa: E402,F401
+import app.contexts.organization.models  # noqa: E402,F401
 
 config = context.config
 
