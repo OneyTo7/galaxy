@@ -5,16 +5,20 @@ import subprocess
 import tempfile
 import time
 
+from app.core.config import settings
 from app.contexts.evaluation.schemas import CaseResult
 
 
 def run(code: str, lang: str, test_cases: list) -> list[CaseResult]:
-    if lang == "python":
-        return _run_python(code, test_cases)
-    raise ValueError(f"unsupported lang: {lang}")
+    if lang != "python":
+        raise ValueError(f"unsupported lang: {lang}")
+    if settings.SANDBOX_MODE == "docker":
+        from app.contexts.evaluation.sandbox import run_python_docker
+        return run_python_docker(code, test_cases)
+    return _run_python_subprocess(code, test_cases)
 
 
-def _run_python(code: str, test_cases: list) -> list[CaseResult]:
+def _run_python_subprocess(code: str, test_cases: list) -> list[CaseResult]:
     results: list[CaseResult] = []
     with tempfile.TemporaryDirectory() as d:
         src = pathlib.Path(d) / "sol.py"

@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     MINIO_SECRET_KEY: str = ""
     MINIO_BUCKET: str = "galaxy-files"
     MOCK: bool = True
+    SANDBOX_MODE: str = "subprocess"
 
 
 settings = Settings()

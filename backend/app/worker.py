@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from app.contexts.assignment.providers.moma import AssignmentGenerator
 from app.contexts.assignment.repository import SQLAlchemyAssignmentRepo
 from app.contexts.assignment.service import AssignmentService
 from app.contexts.evaluation.repository import SQLEvaluationRepo
@@ -25,7 +26,7 @@ def run_worker() -> None:
         db = SessionLocal()
         try:
             eval_svc = EvaluationService(SQLEvaluationRepo(db))
-            assign_svc = AssignmentService(SQLAlchemyAssignmentRepo(db))
+            assign_svc = AssignmentService(SQLAlchemyAssignmentRepo(db), AssignmentGenerator())
             sub_repo = SQLAlchemySubmissionRepo(db)
             submission_svc = SubmissionService(sub_repo, assign_svc, eval_svc)
             try:
