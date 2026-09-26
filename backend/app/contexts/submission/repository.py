@@ -15,9 +15,9 @@ class SubmissionRepoProtocol:
         lang: str,
         status: str,
         score: int,
-        last_result: list,
     ) -> SubmissionDomain: ...
     def get(self, submission_id: int) -> SubmissionDomain | None: ...
+    def update_status_score(self, submission_id: int, status: str, score: int) -> SubmissionDomain | None: ...
     def list_by_assignment(self, assignment_id: int) -> list[SubmissionDomain]: ...
 
 
@@ -32,7 +32,7 @@ class SQLAlchemySubmissionRepo(SubmissionRepoProtocol):
             s.status, s.score, s.last_result, s.created_at,
         )
 
-    def create(self, user_id, assignment_id, code, lang, status, score, last_result):
+    def create(self, user_id, assignment_id, code, lang, status, score):
         s = Submission(
             user_id=user_id,
             assignment_id=assignment_id,
@@ -40,9 +40,18 @@ class SQLAlchemySubmissionRepo(SubmissionRepoProtocol):
             lang=lang,
             status=status,
             score=score,
-            last_result=last_result,
         )
         self._db.add(s)
+        self._db.commit()
+        self._db.refresh(s)
+        return self._to_domain(s)
+
+    def update_status_score(self, submission_id, status, score):
+        s = self._db.get(Submission, submission_id)
+        if not s:
+            return None
+        s.status = status
+        s.score = score
         self._db.commit()
         self._db.refresh(s)
         return self._to_domain(s)

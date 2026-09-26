@@ -52,5 +52,11 @@ async def get_evaluation(
         assignment_id=d.assignment_id,
         score=d.score,
         status=d.status,
-        results=[CaseResultOut(**r) for r in (d.last_result or [])],
+        results=[
+            CaseResultOut(
+                case_id=r.case_id, passed=r.passed, stdout=r.stdout,
+                stderr=r.stderr, timed_out=r.timed_out, elapsed_ms=r.elapsed_ms,
+            )
+            for r in svc.get_evaluation(d.id)
+        ],
     )
