@@ -7,7 +7,7 @@ from app.contexts.submission.deps import get_submission_service
 from app.contexts.submission.schemas import EvaluationOut, SubmissionCreate
 from app.contexts.submission.service import SubmissionService
 from app.core.deps import CurrentUser, get_current_user
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ForbiddenError, NotFoundError
 
 router = APIRouter(prefix="/api/submissions", tags=["submission"])
 
@@ -22,18 +22,14 @@ async def submit(
         domain, results = svc.submit(user.id, req.assignment_id, req.code, req.lang)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
     return EvaluationOut(
         submission_id=domain.id,
         assignment_id=domain.assignment_id,
         score=domain.score,
         status=domain.status,
-        results=[
-            CaseResultOut(
-                case_id=r.case_id, passed=r.passed, stdout=r.stdout,
-                stderr=r.stderr, timed_out=r.timed_out, elapsed_ms=r.elapsed_ms,
-            )
-            for r in results
-        ],
+        results=[],
     )
 
 
@@ -44,9 +40,11 @@ async def get_evaluation(
     svc: SubmissionService = Depends(get_submission_service),
 ) -> EvaluationOut:
     try:
-        d = svc.get(submission_id)
+        d, results = svc.get_evaluation(submission_id, user)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
     return EvaluationOut(
         submission_id=d.id,
         assignment_id=d.assignment_id,
@@ -57,6 +55,6 @@ async def get_evaluation(
                 case_id=r.case_id, passed=r.passed, stdout=r.stdout,
                 stderr=r.stderr, timed_out=r.timed_out, elapsed_ms=r.elapsed_ms,
             )
-            for r in svc.get_evaluation(d.id)
+            for r in results
         ],
     )

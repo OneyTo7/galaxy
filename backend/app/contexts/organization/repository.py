@@ -19,6 +19,7 @@ class OrganizationRepoProtocol:
     def get_class(self, class_id: int) -> ClassDomain | None: ...
     def create_enrollment(self, class_id: int, student_id: int) -> EnrollmentDomain: ...
     def list_enrollments_by_class(self, class_id: int) -> list[EnrollmentDomain]: ...
+    def is_enrolled(self, student_id: int, course_id: int) -> bool: ...
 
 
 class SQLOrganizationRepo(OrganizationRepoProtocol):
@@ -92,3 +93,16 @@ class SQLOrganizationRepo(OrganizationRepoProtocol):
             .all()
         )
         return [self._enr_to_domain(e) for e in rows]
+
+    def is_enrolled(self, student_id, course_id):
+        class_ids = [
+            c[0] for c in self._db.query(Class.id).filter(Class.course_id == course_id).all()
+        ]
+        if not class_ids:
+            return False
+        enrolled = (
+            self._db.query(Enrollment)
+            .filter(Enrollment.class_id.in_(class_ids), Enrollment.student_id == student_id)
+            .first()
+        )
+        return enrolled is not None

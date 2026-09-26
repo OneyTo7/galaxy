@@ -10,6 +10,8 @@ from app.contexts.assignment.repository import SQLAlchemyAssignmentRepo
 from app.contexts.assignment.service import AssignmentService
 from app.contexts.evaluation.repository import SQLEvaluationRepo
 from app.contexts.evaluation.service import EvaluationService
+from app.contexts.organization.repository import SQLOrganizationRepo
+from app.contexts.organization.service import OrganizationService
 from app.contexts.submission.repository import SQLAlchemySubmissionRepo
 from app.contexts.submission.service import SubmissionService
 from app.core.database import SessionLocal
@@ -26,9 +28,10 @@ def run_worker() -> None:
         db = SessionLocal()
         try:
             eval_svc = EvaluationService(SQLEvaluationRepo(db))
-            assign_svc = AssignmentService(SQLAlchemyAssignmentRepo(db), AssignmentGenerator())
+            org_svc = OrganizationService(SQLOrganizationRepo(db))
+            assign_svc = AssignmentService(SQLAlchemyAssignmentRepo(db), AssignmentGenerator(), org_svc)
             sub_repo = SQLAlchemySubmissionRepo(db)
-            submission_svc = SubmissionService(sub_repo, assign_svc, eval_svc)
+            submission_svc = SubmissionService(sub_repo, assign_svc, eval_svc, org_svc)
             try:
                 sub = submission_svc.get(submission_id)
                 assignment = assign_svc.get(sub.assignment_id)
