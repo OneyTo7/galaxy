@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     MOMA_MODEL: str = ""
     MOMA_TIMEOUT: int = 60
     MOMA_MAX_RETRIES: int = 3
+    CORS_ORIGINS: list = ["http://localhost:5173", "http://localhost:3000"]
     REDIS_URL: str = ""
     MINIO_ENDPOINT: str = ""
     MINIO_ACCESS_KEY: str = ""

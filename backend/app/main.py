@@ -1,9 +1,12 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.contexts.ai.providers.moma import close_moma
+from app.core.config import settings
+from app.core.exceptions import DomainError
 from app.contexts.appeal.router import router as appeal_router
 from app.contexts.assignment.router import router as assignment_router
 from app.contexts.audit.middleware import AuditMiddleware
@@ -32,12 +35,31 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
 )
 app.add_middleware(AuditMiddleware)
+
+
+@app.exception_handler(DomainError)
+async def domain_error_handler(request: Request, exc: DomainError):
+    status_map = {
+        "not_found": 404, "forbidden": 403, "conflict": 409,
+        "unauthorized": 401, "moma_unavailable": 503,
+        "provider_error": 503, "variant_error": 503,
+        "generation_error": 503, "cheating_error": 503,
+    }
+    return JSONResponse(
+        status_code=status_map.get(exc.code, 400),
+        content={"detail": exc.message},
+    )
+
+
+@app.exception_handler(Exception)
+async def general_error_handler(request: Request, exc: Exception):
+    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
 
 app.include_router(user_router)
 app.include_router(assignment_router)
