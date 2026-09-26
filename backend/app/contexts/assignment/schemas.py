@@ -78,3 +78,25 @@ class AssignmentDomain:
     status: str
     created_at: datetime
     test_cases: list[TestCaseDomain] = field(default_factory=list)
+
+
+class TestCaseResult(BaseModel):
+    input: str = ""
+    expected_output: str = ""
+    is_hidden: bool = False
+    weight: int = 1
+    name: str = ""
+
+
+class AssignmentResult(BaseModel):
+    title: str
+    description: str
+    lang: str = "python"
+    test_cases: list[TestCaseResult] = []
+    scoring_rubric: str = ""
+    reference_code: str = ""
+
+
+class AssignmentGenerate(BaseModel):
+    course_id: Optional[int] = None
+    prompt: str = Field(min_length=1)

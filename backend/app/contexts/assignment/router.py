@@ -3,9 +3,11 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.contexts.assignment.deps import get_assignment_service
+from app.contexts.assignment.exceptions import GenerationError
 from app.contexts.assignment.schemas import (
     AssignmentCreate,
     AssignmentDomain,
+    AssignmentGenerate,
     AssignmentOut,
     AssignmentUpdate,
     TestCaseOut,
@@ -43,6 +45,19 @@ def _to_out(d: AssignmentDomain) -> AssignmentOut:
             for tc in d.test_cases
         ],
     )
+
+
+@router.post("/generate", response_model=AssignmentOut, status_code=status.HTTP_201_CREATED)
+async def generate_assignment(
+    req: AssignmentGenerate,
+    teacher: CurrentUser = Depends(require_teacher),
+    svc: AssignmentService = Depends(get_assignment_service),
+) -> AssignmentOut:
+    try:
+        domain = await svc.generate(teacher.id, req.course_id, req.prompt)
+    except GenerationError as e:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
+    return _to_out(domain)
 
 
 @router.post("", response_model=AssignmentOut, status_code=status.HTTP_201_CREATED)

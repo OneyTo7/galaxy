@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from app.contexts.assignment.providers.moma import AssignmentGenerator
 from app.contexts.assignment.repository import AssignmentRepoProtocol
 from app.contexts.assignment.schemas import AssignmentDomain
 from app.core.exceptions import NotFoundError
 
 
 class AssignmentService:
-    def __init__(self, repo: AssignmentRepoProtocol) -> None:
+    def __init__(self, repo: AssignmentRepoProtocol, generator: AssignmentGenerator) -> None:
         self._repo = repo
+        self._generator = generator
 
     def create(self, teacher_id: int, payload) -> AssignmentDomain:
         data = {
@@ -33,6 +35,20 @@ class AssignmentService:
 
     def list_by_course(self, course_id: int) -> list[AssignmentDomain]:
         return self._repo.list_by_course(course_id)
+
+    async def generate(self, teacher_id: int, course_id: int | None, prompt: str) -> AssignmentDomain:
+        result = await self._generator.generate(prompt)
+        data = {
+            "course_id": course_id,
+            "title": result.title,
+            "description": result.description,
+            "lang": result.lang,
+            "scoring_rubric": result.scoring_rubric,
+            "reference_code": result.reference_code,
+            "status": "draft",
+        }
+        test_cases = [tc.model_dump() for tc in result.test_cases]
+        return self._repo.create(teacher_id, data, test_cases)
 
     def update(self, assignment_id: int, payload) -> AssignmentDomain:
         data = {
