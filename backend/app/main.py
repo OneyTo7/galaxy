@@ -7,6 +7,7 @@ from app.contexts.assignment.router import router as assignment_router
 from app.contexts.diagnose.router import router as diagnose_router
 from app.contexts.submission.router import router as submission_router
 from app.contexts.user.router import router as user_router
+from app.contexts.variant.router import router as variant_router
 
 
 @asynccontextmanager
@@ -32,6 +33,7 @@ app.include_router(user_router)
 app.include_router(assignment_router)
 app.include_router(submission_router)
 app.include_router(diagnose_router)
+app.include_router(variant_router)
 
 
 @app.get("/health", tags=["health"])
