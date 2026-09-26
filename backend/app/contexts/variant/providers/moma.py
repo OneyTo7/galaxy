@@ -1,17 +1,9 @@
 from __future__ import annotations
 
-import httpx
-
+from app.contexts.ai.providers.moma import MOMA_HTTP
 from app.contexts.variant.exceptions import VariantError
 from app.contexts.variant.schemas import VariantResult
 from app.core.config import settings
-
-if not settings.MOCK:
-    MOMA_HTTP = httpx.AsyncClient(
-        base_url=settings.MOMA_ENDPOINT,
-        timeout=httpx.Timeout(connect=5.0, read=60.0, write=10.0, pool=5.0),
-        limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
-    )
 
 
 class MoMAProvider:

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.contexts.ai.providers.moma import close_moma
 from app.contexts.appeal.router import router as appeal_router
 from app.contexts.assignment.router import router as assignment_router
 from app.contexts.diagnose.router import router as diagnose_router
@@ -16,6 +17,7 @@ from app.contexts.variant.router import router as variant_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
+    await close_moma()
 
 
 app = FastAPI(

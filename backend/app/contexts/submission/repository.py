@@ -29,7 +29,7 @@ class SQLAlchemySubmissionRepo(SubmissionRepoProtocol):
     def _to_domain(s: Submission) -> SubmissionDomain:
         return SubmissionDomain(
             s.id, s.user_id, s.assignment_id, s.code, s.lang,
-            s.status, s.score, s.last_result, s.created_at,
+            s.status, s.score, s.created_at,
         )
 
     def create(self, user_id, assignment_id, code, lang, status, score):

@@ -16,5 +16,11 @@ class EvaluationService:
         self._repo.create_many(submission_id, results)
         return results
 
+    @staticmethod
+    def score(results: list[CaseResult], test_cases: list) -> int:
+        total = sum(tc.weight for tc in test_cases) or 1
+        passed = sum(tc.weight for tc, r in zip(test_cases, results) if r.passed)
+        return round(passed / total * 100)
+
     def list_by_submission(self, submission_id: int) -> list[CaseResult]:
         return self._repo.list_by_submission(submission_id)

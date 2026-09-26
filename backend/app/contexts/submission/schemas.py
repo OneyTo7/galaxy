@@ -42,5 +42,4 @@ class SubmissionDomain:
     lang: str
     status: str
     score: int
-    last_result: Optional[list]
     created_at: datetime
