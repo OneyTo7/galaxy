@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.contexts.ai.providers.moma import close_moma
 from app.contexts.appeal.router import router as appeal_router
 from app.contexts.assignment.router import router as assignment_router
+from app.contexts.audit.middleware import AuditMiddleware
+from app.contexts.audit.router import router as audit_router
 from app.contexts.cheating.router import router as cheating_router
 from app.contexts.diagnose.router import router as diagnose_router
 from app.contexts.grade.router import router as grade_router
@@ -35,6 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=True,
 )
+app.add_middleware(AuditMiddleware)
 
 app.include_router(user_router)
 app.include_router(assignment_router)
@@ -46,6 +49,7 @@ app.include_router(organization_router)
 app.include_router(appeal_router)
 app.include_router(cheating_router)
 app.include_router(grade_router)
+app.include_router(audit_router)
 
 
 @app.get("/health", tags=["health"])
