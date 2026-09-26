@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from app.contexts.report.deps import get_report_service
-from app.contexts.report.schemas import CourseReport, LearningReport
+from app.contexts.report.schemas import ClassReport, CourseReport, LearningReport
 from app.contexts.report.service import ReportService
 from app.core.deps import CurrentUser, require_teacher
 
@@ -26,3 +26,12 @@ async def get_course_report(
     svc: ReportService = Depends(get_report_service),
 ) -> CourseReport:
     return svc.get_course_report(course_id)
+
+
+@router.get("/api/classes/{class_id}/learning-report", response_model=ClassReport)
+async def get_class_report(
+    class_id: int,
+    user: CurrentUser = Depends(require_teacher),
+    svc: ReportService = Depends(get_report_service),
+) -> ClassReport:
+    return svc.get_class_report(class_id)

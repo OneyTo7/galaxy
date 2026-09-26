@@ -33,6 +33,12 @@ class OrganizationService:
         self.get_course(course_id)
         return self._repo.list_classes_by_course(course_id)
 
+    def get_class(self, class_id: int) -> ClassDomain:
+        cl = self._repo.get_class(class_id)
+        if not cl:
+            raise NotFoundError("班级不存在")
+        return cl
+
     def enroll(self, class_id: int, student_id: int) -> EnrollmentDomain:
         return self._repo.create_enrollment(class_id, student_id)
 
