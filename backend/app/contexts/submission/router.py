@@ -6,7 +6,7 @@ from app.contexts.evaluation.schemas import CaseResultOut
 from app.contexts.submission.deps import get_submission_service
 from app.contexts.submission.schemas import EvaluationOut, SubmissionCreate
 from app.contexts.submission.service import SubmissionService
-from app.core.deps import get_current_user_id
+from app.core.deps import CurrentUser, get_current_user
 from app.core.exceptions import NotFoundError
 
 router = APIRouter(prefix="/api/submissions", tags=["submission"])
@@ -15,11 +15,11 @@ router = APIRouter(prefix="/api/submissions", tags=["submission"])
 @router.post("", response_model=EvaluationOut, status_code=status.HTTP_201_CREATED)
 async def submit(
     req: SubmissionCreate,
-    user_id: str = Depends(get_current_user_id),
+    user: CurrentUser = Depends(get_current_user),
     svc: SubmissionService = Depends(get_submission_service),
 ) -> EvaluationOut:
     try:
-        domain, results = svc.submit(int(user_id), req.assignment_id, req.code, req.lang)
+        domain, results = svc.submit(user.id, req.assignment_id, req.code, req.lang)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
     return EvaluationOut(
@@ -40,7 +40,7 @@ async def submit(
 @router.get("/{submission_id}/evaluation", response_model=EvaluationOut)
 async def get_evaluation(
     submission_id: int,
-    user_id: str = Depends(get_current_user_id),
+    user: CurrentUser = Depends(get_current_user),
     svc: SubmissionService = Depends(get_submission_service),
 ) -> EvaluationOut:
     try:

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.contexts.user.deps import get_user_service
 from app.contexts.user.schemas import LoginIn, RegisterIn, TokenOut, UserOut
 from app.contexts.user.service import UserService
-from app.core.deps import get_current_user_id
+from app.core.deps import CurrentUser, get_current_user
 from app.core.exceptions import AuthError, ConflictError, NotFoundError
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -31,11 +31,11 @@ async def login(req: LoginIn, svc: UserService = Depends(get_user_service)) -> T
 
 @router.get("/me", response_model=UserOut)
 async def me(
-    user_id: str = Depends(get_current_user_id),
+    user: CurrentUser = Depends(get_current_user),
     svc: UserService = Depends(get_user_service),
 ) -> UserOut:
     try:
-        domain = svc.get_me(int(user_id))
+        domain = svc.get_me(user.id)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
     return UserOut(

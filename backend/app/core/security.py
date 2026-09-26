@@ -20,14 +20,13 @@ def verify_password(raw: str, hashed: str) -> bool:
         return False
 
 
-def create_access_token(subject: str) -> str:
+def create_access_token(subject: str, role: str = "") -> str:
     exp = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return jwt.encode({"sub": subject, "exp": exp}, settings.SECRET_KEY, algorithm="HS256")
+    return jwt.encode({"sub": subject, "role": role, "exp": exp}, settings.SECRET_KEY, algorithm="HS256")
 
 
-def decode_token(token: str) -> str | None:
+def decode_token(token: str) -> dict | None:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        return payload.get("sub")
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
     except JWTError:
         return None

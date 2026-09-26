@@ -18,7 +18,7 @@ class UserService:
         domain = self._repo.add(
             username, hash_password(password), role, display_name
         )
-        return domain, create_access_token(str(domain.id))
+        return domain, create_access_token(str(domain.id), domain.role)
 
     def login(self, username: str, password: str) -> tuple[UserDomain, str]:
         domain = self._repo.get_by_username(username)
@@ -27,7 +27,7 @@ class UserService:
         pw_hash = self._repo.get_password_hash(username)
         if not pw_hash or not verify_password(password, pw_hash):
             raise AuthError("用户名或密码错误")
-        return domain, create_access_token(str(domain.id))
+        return domain, create_access_token(str(domain.id), domain.role)
 
     def get_me(self, user_id: int) -> UserDomain:
         domain = self._repo.get_by_id(user_id)

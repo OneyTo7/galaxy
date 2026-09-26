@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.contexts.variant.deps import get_variant_service
 from app.contexts.variant.schemas import VariantOut
 from app.contexts.variant.service import VariantService
-from app.core.deps import get_current_user_id
+from app.core.deps import CurrentUser, get_current_user
 from app.core.exceptions import DomainError
 
 router = APIRouter(prefix="/api/submissions", tags=["variant"])
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/submissions", tags=["variant"])
 )
 async def generate_variant(
     submission_id: int,
-    user_id: str = Depends(get_current_user_id),
+    user: CurrentUser = Depends(get_current_user),
     svc: VariantService = Depends(get_variant_service),
 ) -> VariantOut:
     try:
@@ -40,7 +40,7 @@ async def generate_variant(
 @router.get("/{submission_id}/variants", response_model=list[VariantOut])
 async def list_variants(
     submission_id: int,
-    user_id: str = Depends(get_current_user_id),
+    user: CurrentUser = Depends(get_current_user),
     svc: VariantService = Depends(get_variant_service),
 ) -> list[VariantOut]:
     return [

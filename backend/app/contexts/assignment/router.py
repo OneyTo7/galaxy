@@ -11,7 +11,7 @@ from app.contexts.assignment.schemas import (
     TestCaseOut,
 )
 from app.contexts.assignment.service import AssignmentService
-from app.core.deps import get_current_user_id
+from app.core.deps import CurrentUser, require_teacher
 from app.core.exceptions import NotFoundError
 
 router = APIRouter(prefix="/api/assignments", tags=["assignment"])
@@ -47,25 +47,25 @@ def _to_out(d: AssignmentDomain) -> AssignmentOut:
 @router.post("", response_model=AssignmentOut, status_code=status.HTTP_201_CREATED)
 async def create_assignment(
     req: AssignmentCreate,
-    teacher_id: str = Depends(get_current_user_id),
+    teacher: CurrentUser = Depends(require_teacher),
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentOut:
-    domain = svc.create(int(teacher_id), req)
+    domain = svc.create(teacher.id, req)
     return _to_out(domain)
 
 
 @router.get("", response_model=list[AssignmentOut])
 async def list_assignments(
-    teacher_id: str = Depends(get_current_user_id),
+    teacher: CurrentUser = Depends(require_teacher),
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> list[AssignmentOut]:
-    return [_to_out(d) for d in svc.list_mine(int(teacher_id))]
+    return [_to_out(d) for d in svc.list_mine(teacher.id)]
 
 
 @router.get("/{assignment_id}", response_model=AssignmentOut)
 async def get_assignment(
     assignment_id: int,
-    teacher_id: str = Depends(get_current_user_id),
+    teacher: CurrentUser = Depends(require_teacher),
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentOut:
     try:
@@ -78,7 +78,7 @@ async def get_assignment(
 async def update_assignment(
     assignment_id: int,
     req: AssignmentUpdate,
-    teacher_id: str = Depends(get_current_user_id),
+    teacher: CurrentUser = Depends(require_teacher),
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentOut:
     try:
@@ -90,7 +90,7 @@ async def update_assignment(
 @router.delete("/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_assignment(
     assignment_id: int,
-    teacher_id: str = Depends(get_current_user_id),
+    teacher: CurrentUser = Depends(require_teacher),
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> None:
     try:
