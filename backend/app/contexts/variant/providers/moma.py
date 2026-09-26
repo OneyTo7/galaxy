@@ -1,9 +1,18 @@
 from __future__ import annotations
 
-from app.contexts.ai.providers.moma import MOMA_HTTP
+import json
+
+from app.contexts.ai.providers.moma import chat
 from app.contexts.variant.exceptions import VariantError
 from app.contexts.variant.schemas import VariantResult
 from app.core.config import settings
+
+_SYSTEM = (
+    "你是编程命题专家。根据学生误区生成换情境的变式题，"
+    "输出 JSON：{\"title\": str, \"description\": str, "
+    "\"cases\": [{\"input\": str, \"expected_output\": str}], "
+    "\"scoring_points\": [str], \"lang\": str}。只输出 JSON，不要其他文字。"
+)
 
 
 class MoMAProvider:
@@ -30,4 +39,25 @@ class MoMAProvider:
     async def _call_moma(
         self, misconception_type, knowledge_point, original_context
     ) -> VariantResult:
-        raise VariantError("MoMA 真实调用未实现（W3 切真）")
+        user = json.dumps(
+            {
+                "misconception_type": misconception_type,
+                "knowledge_point": knowledge_point,
+                "original_context": original_context,
+            },
+            ensure_ascii=False,
+        )
+        try:
+            content = await chat(_SYSTEM, user)
+            data = json.loads(content)
+            return VariantResult(
+                data["title"],
+                data["description"],
+                data["cases"],
+                data["scoring_points"],
+                data.get("lang", "python"),
+            )
+        except RuntimeError as e:
+            raise VariantError(str(e))
+        except (ValueError, KeyError) as e:
+            raise VariantError(f"变式解析失败: {e}")

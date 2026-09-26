@@ -1,9 +1,17 @@
 from __future__ import annotations
 
-from app.contexts.ai.providers.moma import MOMA_HTTP
+import json
+
+from app.contexts.ai.providers.moma import chat
 from app.contexts.diagnose.exceptions import ProviderError
 from app.contexts.diagnose.schemas import GenerateResult
 from app.core.config import settings
+
+_SYSTEM = (
+    "你是编程教学误区诊断专家。读取学生代码、编译/运行报错、用例通过情况，"
+    "输出 JSON：{\"misconception_type\": str, \"evidence\": str, \"knowledge_point\": str, \"confidence\": float}。"
+    "evidence 必须引用真实报错或失败用例，禁止编造。只输出 JSON，不要其他文字。"
+)
 
 
 class MoMAProvider:
@@ -33,4 +41,26 @@ class MoMAProvider:
     async def _call_moma(
         self, code, lang, compile_error, run_errors, test_results
     ) -> GenerateResult:
-        raise ProviderError("MoMA 真实调用未实现（W3 切真）", retryable=False)
+        user = json.dumps(
+            {
+                "code": code,
+                "lang": lang,
+                "compile_error": compile_error,
+                "run_errors": run_errors,
+                "test_results": test_results,
+            },
+            ensure_ascii=False,
+        )
+        try:
+            content = await chat(_SYSTEM, user)
+            data = json.loads(content)
+            return GenerateResult(
+                data["misconception_type"],
+                data["evidence"],
+                data["knowledge_point"],
+                float(data["confidence"]),
+            )
+        except RuntimeError as e:
+            raise ProviderError(str(e), retryable=False)
+        except (ValueError, KeyError) as e:
+            raise ProviderError(f"诊断结果解析失败: {e}", retryable=False)

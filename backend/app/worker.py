@@ -17,25 +17,28 @@ from app.core.queue import consume_submission
 
 
 def run_worker() -> None:
-    db = SessionLocal()
-    eval_svc = EvaluationService(SQLEvaluationRepo(db))
-    assign_svc = AssignmentService(SQLAlchemyAssignmentRepo(db))
-    sub_repo = SQLAlchemySubmissionRepo(db)
-    submission_svc = SubmissionService(sub_repo, assign_svc, eval_svc)
     print("evaluation worker started, waiting for submissions...")
     while True:
         submission_id = consume_submission(timeout=5)
         if submission_id is None:
             continue
+        db = SessionLocal()
         try:
-            sub = submission_svc.get(submission_id)
-            assignment = assign_svc.get(sub.assignment_id)
-            results = eval_svc.run(sub.code, sub.lang, assignment.test_cases, sub.id)
-            score = eval_svc.score(results, assignment.test_cases)
-            submission_svc.update_score(sub.id, score)
-            print(f"evaluated submission {sub.id} score {score}")
-        except NotFoundError:
-            continue
+            eval_svc = EvaluationService(SQLEvaluationRepo(db))
+            assign_svc = AssignmentService(SQLAlchemyAssignmentRepo(db))
+            sub_repo = SQLAlchemySubmissionRepo(db)
+            submission_svc = SubmissionService(sub_repo, assign_svc, eval_svc)
+            try:
+                sub = submission_svc.get(submission_id)
+                assignment = assign_svc.get(sub.assignment_id)
+                results = eval_svc.run(sub.code, sub.lang, assignment.test_cases, sub.id)
+                score = eval_svc.score(results, assignment.test_cases)
+                submission_svc.update_score(sub.id, score)
+                print(f"evaluated submission {sub.id} score {score}")
+            except NotFoundError:
+                continue
+        finally:
+            db.close()
 
 
 if __name__ == "__main__":
