@@ -39,9 +39,11 @@ class SubmissionService:
         return domain
 
     def get_evaluation(self, submission_id: int, user: CurrentUser) -> tuple[SubmissionDomain, list[CaseResult]]:
-        submission = self._sub_repo.get(submission_id)
-        if not submission:
-            raise NotFoundError("提交不存在")
+        submission = self.get_with_permission(submission_id, user)
+        results = self._evaluation_svc.list_by_submission(submission_id)
+        return submission, results
+
+    def _check_access(self, submission: SubmissionDomain, user: CurrentUser) -> None:
         if user.role == "student" and submission.user_id != user.id:
             raise ForbiddenError()
         if user.role == "teacher":
@@ -50,8 +52,13 @@ class SubmissionService:
                 course = self._org_svc.get_course(assignment.course_id)
                 if course.teacher_id != user.id:
                     raise ForbiddenError()
-        results = self._evaluation_svc.list_by_submission(submission_id)
-        return submission, results
+
+    def get_with_permission(self, submission_id: int, user: CurrentUser) -> SubmissionDomain:
+        submission = self._sub_repo.get(submission_id)
+        if not submission:
+            raise NotFoundError("提交不存在")
+        self._check_access(submission, user)
+        return submission
 
     def update_score(self, submission_id: int, score: int) -> None:
         self._sub_repo.update_status_score(submission_id, "done", score)

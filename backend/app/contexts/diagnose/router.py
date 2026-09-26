@@ -6,7 +6,7 @@ from app.contexts.diagnose.deps import get_diagnose_service
 from app.contexts.diagnose.schemas import DiagnoseOut, MisconceptionOut
 from app.contexts.diagnose.service import DiagnoseService
 from app.core.deps import CurrentUser, get_current_user
-from app.core.exceptions import DomainError, NotFoundError
+from app.core.exceptions import DomainError, ForbiddenError, NotFoundError
 
 router = APIRouter(prefix="/api/submissions", tags=["diagnose"])
 
@@ -22,9 +22,11 @@ async def diagnose(
     svc: DiagnoseService = Depends(get_diagnose_service),
 ) -> DiagnoseOut:
     try:
-        domain = await svc.diagnose(submission_id)
+        domain = await svc.diagnose(submission_id, user)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
     except DomainError as e:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
     return DiagnoseOut(

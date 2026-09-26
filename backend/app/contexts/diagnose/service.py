@@ -5,6 +5,7 @@ from app.contexts.diagnose.repository import MisconceptionRepoProtocol
 from app.contexts.diagnose.schemas import MisconceptionDomain
 from app.contexts.evaluation.service import EvaluationService
 from app.contexts.submission.service import SubmissionService
+from app.core.deps import CurrentUser
 
 
 class DiagnoseService:
@@ -20,8 +21,8 @@ class DiagnoseService:
         self._repo = misconception_repo
         self._moma = moma_provider
 
-    async def diagnose(self, submission_id: int) -> MisconceptionDomain:
-        submission = self._submission_svc.get(submission_id)
+    async def diagnose(self, submission_id: int, user: CurrentUser) -> MisconceptionDomain:
+        submission = self._submission_svc.get_with_permission(submission_id, user)
         results = self._evaluation_svc.list_by_submission(submission_id)
         test_results = [
             {"case_id": r.case_id, "passed": r.passed, "stderr": r.stderr}

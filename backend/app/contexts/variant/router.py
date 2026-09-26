@@ -6,7 +6,7 @@ from app.contexts.variant.deps import get_variant_service
 from app.contexts.variant.schemas import VariantOut
 from app.contexts.variant.service import VariantService
 from app.core.deps import CurrentUser, get_current_user
-from app.core.exceptions import DomainError
+from app.core.exceptions import DomainError, ForbiddenError
 
 router = APIRouter(prefix="/api/submissions", tags=["variant"])
 
@@ -22,9 +22,9 @@ async def generate_variant(
     svc: VariantService = Depends(get_variant_service),
 ) -> VariantOut:
     try:
-        domain = await svc.generate(submission_id)
+        domain = await svc.generate(submission_id, user)
     except DomainError as e:
-        code = 409 if e.code == "no_diagnosis" else 503
+        code = 403 if e.code == "forbidden" else (409 if e.code == "no_diagnosis" else 503)
         raise HTTPException(code, detail=e.message)
     return VariantOut(
         id=domain.id,
