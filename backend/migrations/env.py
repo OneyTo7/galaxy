@@ -15,6 +15,7 @@ from app.core.database import Base  # noqa: E402
 import app.contexts.user.models  # noqa: E402,F401
 import app.contexts.assignment.models  # noqa: E402,F401
 import app.contexts.submission.models  # noqa: E402,F401
+import app.contexts.diagnose.models  # noqa: E402,F401
 
 config = context.config
 
