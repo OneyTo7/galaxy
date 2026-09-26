@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     MOMA_ENDPOINT: str = ""
     MOMA_API_KEY: str = ""
     MOMA_MODEL: str = ""
+    REDIS_URL: str = ""
+    MINIO_ENDPOINT: str = ""
+    MINIO_ACCESS_KEY: str = ""
+    MINIO_SECRET_KEY: str = ""
+    MINIO_BUCKET: str = "galaxy-files"
     MOCK: bool = True
 
 
