@@ -21,6 +21,7 @@ def _to_out(d: AssignmentDomain) -> AssignmentOut:
     return AssignmentOut(
         id=d.id,
         teacher_id=d.teacher_id,
+        course_id=d.course_id,
         title=d.title,
         description=d.description,
         lang=d.lang,

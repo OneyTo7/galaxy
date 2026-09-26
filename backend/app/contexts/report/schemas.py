@@ -26,3 +26,13 @@ class LearningReport(BaseModel):
     misconception_stats: list[MisconceptionStat] = []
     knowledge_stats: list[KnowledgeStat] = []
     students: list[StudentStat] = []
+
+
+class CourseReport(BaseModel):
+    course_id: int
+    assignment_count: int
+    submission_count: int
+    avg_score: float
+    misconception_stats: list[MisconceptionStat] = []
+    knowledge_stats: list[KnowledgeStat] = []
+    students: list[StudentStat] = []

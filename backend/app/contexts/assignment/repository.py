@@ -10,6 +10,7 @@ class AssignmentRepoProtocol:
     def create(self, teacher_id: int, data: dict, test_cases: list[dict]) -> AssignmentDomain: ...
     def get(self, assignment_id: int) -> AssignmentDomain | None: ...
     def list_by_teacher(self, teacher_id: int) -> list[AssignmentDomain]: ...
+    def list_by_course(self, course_id: int) -> list[AssignmentDomain]: ...
     def update(self, assignment_id: int, data: dict) -> AssignmentDomain | None: ...
     def delete(self, assignment_id: int) -> bool: ...
 
@@ -27,7 +28,7 @@ class SQLAlchemyAssignmentRepo(AssignmentRepoProtocol):
 
     def _to_domain(self, a: Assignment) -> AssignmentDomain:
         return AssignmentDomain(
-            a.id, a.teacher_id, a.title, a.description, a.lang,
+            a.id, a.teacher_id, a.course_id, a.title, a.description, a.lang,
             a.scoring_rubric, a.reference_code, a.status, a.created_at,
             [self._tc_to_domain(tc) for tc in a.test_cases],
         )
@@ -48,6 +49,15 @@ class SQLAlchemyAssignmentRepo(AssignmentRepoProtocol):
         rows = (
             self._db.query(Assignment)
             .filter(Assignment.teacher_id == teacher_id)
+            .order_by(Assignment.created_at.desc())
+            .all()
+        )
+        return [self._to_domain(a) for a in rows]
+
+    def list_by_course(self, course_id):
+        rows = (
+            self._db.query(Assignment)
+            .filter(Assignment.course_id == course_id)
             .order_by(Assignment.created_at.desc())
             .all()
         )

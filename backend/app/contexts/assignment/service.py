@@ -11,6 +11,7 @@ class AssignmentService:
 
     def create(self, teacher_id: int, payload) -> AssignmentDomain:
         data = {
+            "course_id": payload.course_id,
             "title": payload.title,
             "description": payload.description,
             "lang": payload.lang,
@@ -29,6 +30,9 @@ class AssignmentService:
 
     def list_mine(self, teacher_id: int) -> list[AssignmentDomain]:
         return self._repo.list_by_teacher(teacher_id)
+
+    def list_by_course(self, course_id: int) -> list[AssignmentDomain]:
+        return self._repo.list_by_course(course_id)
 
     def update(self, assignment_id: int, payload) -> AssignmentDomain:
         data = {

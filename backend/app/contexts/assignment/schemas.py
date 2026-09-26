@@ -22,6 +22,7 @@ class TestCaseOut(TestCaseIn):
 
 
 class AssignmentCreate(BaseModel):
+    course_id: Optional[int] = None
     title: str = Field(min_length=1, max_length=200)
     description: str = ""
     lang: str = Field(default="python", pattern="^(java|python)$")
@@ -41,6 +42,7 @@ class AssignmentUpdate(BaseModel):
 class AssignmentOut(BaseModel):
     id: int
     teacher_id: int
+    course_id: Optional[int] = None
     title: str
     description: str
     lang: str
@@ -67,6 +69,7 @@ class TestCaseDomain:
 class AssignmentDomain:
     id: int
     teacher_id: int
+    course_id: Optional[int]
     title: str
     description: str
     lang: str

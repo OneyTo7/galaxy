@@ -12,6 +12,9 @@ class Assignment(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     teacher_id: Mapped[int] = mapped_column(Integer, index=True)
+    course_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("courses.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     title: Mapped[str] = mapped_column(String(200))
     description: Mapped[str] = mapped_column(Text, default="")
     lang: Mapped[str] = mapped_column(String(16), default="python")
