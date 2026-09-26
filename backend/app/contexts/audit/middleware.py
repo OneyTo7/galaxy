@@ -9,6 +9,7 @@ from app.core.security import decode_token
 
 
 class AuditMiddleware(BaseHTTPMiddleware):
+    """审计中间件，自动记录 /api/ 请求。TODO: 高并发建议改异步队列或批量写入。"""
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         path = request.url.path

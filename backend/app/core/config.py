@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     MOMA_ENDPOINT: str = ""
     MOMA_API_KEY: str = ""
     MOMA_MODEL: str = ""
+    MOMA_TIMEOUT: int = 60
+    MOMA_MAX_RETRIES: int = 3
     REDIS_URL: str = ""
     MINIO_ENDPOINT: str = ""
     MINIO_ACCESS_KEY: str = ""

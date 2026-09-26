@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from app.contexts.diagnose.service import DiagnoseService
+from app.contexts.submission.service import SubmissionService
 from app.contexts.variant.exceptions import NoDiagnosisError
 from app.contexts.variant.providers.moma import MoMAProvider
 from app.contexts.variant.repository import VariantRepoProtocol
@@ -12,15 +13,17 @@ class VariantService:
     def __init__(
         self,
         diagnose_svc: DiagnoseService,
+        submission_svc: SubmissionService,
         variant_repo: VariantRepoProtocol,
         moma_provider: MoMAProvider,
     ) -> None:
         self._diagnose_svc = diagnose_svc
+        self._submission_svc = submission_svc
         self._repo = variant_repo
         self._moma = moma_provider
 
     async def generate(self, submission_id: int, user: CurrentUser) -> VariantDomain:
-        self._diagnose_svc._submission_svc.get_with_permission(submission_id, user)
+        self._submission_svc.get_with_permission(submission_id, user)
         diagnoses = self._diagnose_svc.list_by_submission(submission_id)
         if not diagnoses:
             raise NoDiagnosisError()

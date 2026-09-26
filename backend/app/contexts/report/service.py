@@ -114,6 +114,7 @@ class ReportService:
         )
 
     def get_class_report(self, class_id: int, user: CurrentUser) -> ClassReport:
+        # TODO: N+1 优化——每 submission 调 diagnose_svc.list_by_submission，建议批量查 misconception by assignment
         klass = self._org_svc.get_class(class_id)
         course = self._org_svc.get_course(klass.course_id)
         if course.teacher_id != user.id:
