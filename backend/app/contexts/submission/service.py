@@ -52,3 +52,6 @@ class SubmissionService:
         if not domain:
             raise NotFoundError("提交不存在")
         return domain
+
+    def list_by_assignment(self, assignment_id: int) -> list[SubmissionDomain]:
+        return self._sub_repo.list_by_assignment(assignment_id)

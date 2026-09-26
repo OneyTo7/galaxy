@@ -18,6 +18,7 @@ class SubmissionRepoProtocol:
         last_result: list,
     ) -> SubmissionDomain: ...
     def get(self, submission_id: int) -> SubmissionDomain | None: ...
+    def list_by_assignment(self, assignment_id: int) -> list[SubmissionDomain]: ...
 
 
 class SQLAlchemySubmissionRepo(SubmissionRepoProtocol):
@@ -49,3 +50,12 @@ class SQLAlchemySubmissionRepo(SubmissionRepoProtocol):
     def get(self, submission_id):
         s = self._db.get(Submission, submission_id)
         return self._to_domain(s) if s else None
+
+    def list_by_assignment(self, assignment_id):
+        rows = (
+            self._db.query(Submission)
+            .filter(Submission.assignment_id == assignment_id)
+            .order_by(Submission.created_at.desc())
+            .all()
+        )
+        return [self._to_domain(s) for s in rows]
