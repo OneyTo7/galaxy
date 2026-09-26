@@ -14,7 +14,7 @@ from app.contexts.assignment.schemas import (
 )
 from app.contexts.assignment.service import AssignmentService
 from app.core.deps import CurrentUser, require_teacher
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ForbiddenError, NotFoundError
 
 router = APIRouter(prefix="/api/assignments", tags=["assignment"])
 
@@ -57,6 +57,8 @@ async def generate_assignment(
         domain = await svc.generate(teacher.id, req.course_id, req.prompt)
     except GenerationError as e:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
     return _to_out(domain)
 
 
@@ -98,9 +100,11 @@ async def update_assignment(
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentOut:
     try:
-        return _to_out(svc.update(assignment_id, req))
+        return _to_out(svc.update(assignment_id, req, teacher.id))
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
 
 
 @router.delete("/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -110,6 +114,8 @@ async def delete_assignment(
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> None:
     try:
-        svc.delete(assignment_id)
+        svc.delete(assignment_id, teacher.id)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
