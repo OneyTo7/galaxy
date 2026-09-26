@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.contexts.grade.deps import get_grade_service
 from app.contexts.grade.schemas import GradeDomain, GradeOut
 from app.contexts.grade.service import GradeService
 from app.core.deps import CurrentUser, require_teacher
+from app.core.exceptions import ForbiddenError
 
 router = APIRouter(prefix="/api/assignments", tags=["grade"])
 
@@ -24,7 +25,10 @@ async def generate_gradebook(
     teacher: CurrentUser = Depends(require_teacher),
     svc: GradeService = Depends(get_grade_service),
 ) -> list[GradeOut]:
-    return [_to_out(d) for d in svc.generate_gradebook(assignment_id)]
+    try:
+        return [_to_out(d) for d in svc.generate_gradebook(assignment_id, teacher)]
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
 
 
 @router.get("/{assignment_id}/gradebook", response_model=list[GradeOut])
@@ -33,4 +37,7 @@ async def get_gradebook(
     teacher: CurrentUser = Depends(require_teacher),
     svc: GradeService = Depends(get_grade_service),
 ) -> list[GradeOut]:
-    return [_to_out(d) for d in svc.list_by_assignment(assignment_id)]
+    try:
+        return [_to_out(d) for d in svc.list_by_assignment(assignment_id, teacher)]
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)

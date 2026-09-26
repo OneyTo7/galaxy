@@ -6,7 +6,7 @@ from app.contexts.cheating.deps import get_cheating_service
 from app.contexts.cheating.schemas import CheatingDomain, CheatingReportOut
 from app.contexts.cheating.service import CheatingService
 from app.core.deps import CurrentUser, require_teacher
-from app.core.exceptions import DomainError, NotFoundError
+from app.core.exceptions import DomainError, ForbiddenError, NotFoundError
 
 router = APIRouter(prefix="/api/submissions", tags=["cheating"])
 
@@ -30,9 +30,11 @@ async def check_cheating(
     svc: CheatingService = Depends(get_cheating_service),
 ) -> CheatingReportOut:
     try:
-        domain = await svc.check_submission(submission_id)
+        domain = await svc.check_submission(submission_id, teacher)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
     except DomainError as e:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
     return _to_out(domain)
@@ -44,4 +46,9 @@ async def list_cheating(
     teacher: CurrentUser = Depends(require_teacher),
     svc: CheatingService = Depends(get_cheating_service),
 ) -> list[CheatingReportOut]:
-    return [_to_out(d) for d in svc.list_by_submission(submission_id)]
+    try:
+        return [_to_out(d) for d in svc.list_by_submission(submission_id, teacher)]
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
+    except NotFoundError as e:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)

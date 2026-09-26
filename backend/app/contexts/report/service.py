@@ -14,6 +14,8 @@ from app.contexts.report.schemas import (
     StudentStat,
 )
 from app.contexts.submission.service import SubmissionService
+from app.core.deps import CurrentUser
+from app.core.exceptions import ForbiddenError
 
 
 class ReportService:
@@ -29,7 +31,10 @@ class ReportService:
         self._submission_svc = submission_svc
         self._diagnose_svc = diagnose_svc
 
-    def get_assignment_report(self, assignment_id: int) -> LearningReport:
+    def get_assignment_report(self, assignment_id: int, user: CurrentUser) -> LearningReport:
+        assignment = self._assignment_svc.get(assignment_id)
+        if assignment.teacher_id != user.id:
+            raise ForbiddenError()
         submissions = self._submission_svc.list_by_assignment(assignment_id)
         sub_count = len(submissions)
         avg = sum(s.score for s in submissions) / sub_count if sub_count else 0.0
@@ -65,7 +70,10 @@ class ReportService:
             students=students,
         )
 
-    def get_course_report(self, course_id: int) -> CourseReport:
+    def get_course_report(self, course_id: int, user: CurrentUser) -> CourseReport:
+        course = self._org_svc.get_course(course_id)
+        if course.teacher_id != user.id:
+            raise ForbiddenError()
         assignments = self._assignment_svc.list_by_course(course_id)
         assignment_count = len(assignments)
         sub_count = 0
@@ -105,8 +113,11 @@ class ReportService:
             students=list(students_map.values()),
         )
 
-    def get_class_report(self, class_id: int) -> ClassReport:
+    def get_class_report(self, class_id: int, user: CurrentUser) -> ClassReport:
         klass = self._org_svc.get_class(class_id)
+        course = self._org_svc.get_course(klass.course_id)
+        if course.teacher_id != user.id:
+            raise ForbiddenError()
         course_id = klass.course_id
         enrollments = self._org_svc.list_enrollments(class_id)
         student_ids = {e.student_id for e in enrollments}

@@ -6,7 +6,7 @@ from app.contexts.appeal.deps import get_appeal_service
 from app.contexts.appeal.schemas import AppealCreate, AppealDomain, AppealOut, AppealReview
 from app.contexts.appeal.service import AppealService
 from app.core.deps import CurrentUser, get_current_user, require_teacher
-from app.core.exceptions import ConflictError, NotFoundError
+from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
 
 router = APIRouter(prefix="/api", tags=["appeal"])
 
@@ -32,9 +32,11 @@ async def create_appeal(
     svc: AppealService = Depends(get_appeal_service),
 ) -> AppealOut:
     try:
-        domain = svc.create(submission_id, user.id, req.reason)
+        domain = svc.create(submission_id, user, req.reason)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
     return _to_out(domain)
 
 
@@ -62,9 +64,11 @@ async def review_appeal(
     svc: AppealService = Depends(get_appeal_service),
 ) -> AppealOut:
     try:
-        domain = svc.review(appeal_id, teacher.id, req.approved, req.comment, req.new_score)
+        domain = svc.review(appeal_id, teacher, req.approved, req.comment, req.new_score)
     except NotFoundError as e:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=e.message)
     except ConflictError as e:
         raise HTTPException(status.HTTP_409_CONFLICT, detail=e.message)
+    except ForbiddenError as e:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail=e.message)
     return _to_out(domain)
