@@ -18,3 +18,8 @@ class AuthError(DomainError):
 class ConflictError(DomainError):
     def __init__(self, message: str = "conflict") -> None:
         super().__init__(message, code="conflict")
+
+
+class ForbiddenError(DomainError):
+    def __init__(self, message: str = "无权操作该资源") -> None:
+        super().__init__(message, code="forbidden")
