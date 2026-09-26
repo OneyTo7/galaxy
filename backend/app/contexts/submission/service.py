@@ -35,5 +35,8 @@ class SubmissionService:
     def get_evaluation(self, submission_id: int) -> list[CaseResult]:
         return self._evaluation_svc.list_by_submission(submission_id)
 
+    def update_score(self, submission_id: int, score: int) -> None:
+        self._sub_repo.update_status_score(submission_id, "done", score)
+
     def list_by_assignment(self, assignment_id: int) -> list[SubmissionDomain]:
         return self._sub_repo.list_by_assignment(assignment_id)
