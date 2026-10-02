@@ -22,7 +22,7 @@ async function loadSubmissions() {
 async function handleGenerate() {
   if (!submissionId.value) { ElMessage.warning('请先选择一条提交记录'); return }
   loading.value = true; variant.value = null
-  try { variant.value = await generateVariant(submissionId); code = '' }
+  try { variant.value = await generateVariant(submissionId.value); code.value = '' }
   catch (e: any) { ElMessage.error(e.response?.data?.detail || '生成失败') }
   finally { loading.value = false }
 }
