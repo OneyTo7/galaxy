@@ -6,63 +6,90 @@ import { ElMessage } from 'element-plus'
 import type { CheatingReportOut } from '@/types/api'
 
 const route = useRoute()
-const submissionId = ref(Number(route.query.submission) || 8)
+const submissionId = ref(Number(route.query.submission) || 0)
 const reports = ref<CheatingReportOut[]>([])
 const loading = ref(false)
 
 async function handleCheck() {
+  if (!submissionId.value) {
+    ElMessage.warning('请先选择一条提交记录')
+    return
+  }
   loading.value = true
   try {
     await checkCheating(submissionId.value)
     ElMessage.success('检测完成')
-    loadReports()
+    reports.value = await getCheatingReports(submissionId.value)
   } catch (e: any) {
     ElMessage.error(e.response?.data?.detail || '检测失败')
   } finally {
     loading.value = false
   }
 }
-
-async function loadReports() {
-  try {
-    reports.value = await getCheatingReports(submissionId.value)
-  } catch (e) {
-    console.error('加载报告失败', e)
-  }
-}
 </script>
 
 <template>
   <div class="cheating-page">
-    <h1>反作弊报告</h1>
-    <p class="desc">AI 代写检测，判断代码是否疑似 AI 生成。</p>
-    <div class="form-bar">
-      <span>提交 ID</span>
-      <el-input-number v-model="submissionId" :min="1" />
-      <el-button type="primary" :loading="loading" @click="handleCheck">触发检测</el-button>
+    <div class="header">
+      <h1>反作弊检测</h1>
+      <p class="desc">AI 分析代码特征，判断是否疑似 AI 生成。可疑度越高越可能非手写。</p>
     </div>
-    <div v-if="reports.length" class="reports">
+
+    <div class="action-bar">
+      <div class="input-group">
+        <span class="label">提交 ID</span>
+        <el-input-number v-model="submissionId" :min="1" controls-position="right" style="width: 120px" />
+      </div>
+      <el-button type="primary" :loading="loading" @click="handleCheck">开始检测</el-button>
+    </div>
+
+    <div v-if="!loading && reports.length === 0 && submissionId" class="empty">
+      <p>暂无检测记录，点击「开始检测」</p>
+    </div>
+
+    <div class="reports">
       <div v-for="r in reports" :key="r.id" class="report-card" :class="r.status">
-        <div class="report-header">
-          <el-tag :type="r.status === 'flagged' ? 'danger' : 'success'">
-            {{ r.status === 'flagged' ? '疑似 AI 生成' : '未检出' }}
-          </el-tag>
-          <span class="score">可疑度 {{ (r.score * 100).toFixed(0) }}%</span>
+        <div class="report-head">
+          <div class="status-badge" :class="r.status">
+            {{ r.status === 'flagged' ? '⚠ 疑似 AI 生成' : '✓ 未检出' }}
+          </div>
+          <div class="conf-display">
+            <span class="conf-num">{{ (r.score * 100).toFixed(0) }}%</span>
+            <span class="conf-label">可疑度</span>
+          </div>
         </div>
-        <p class="detail">{{ r.detail }}</p>
+        <p class="report-detail">{{ r.detail }}</p>
+        <span class="report-time">{{ r.created_at }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.cheating-page { max-width: 800px; }
-.desc { color: var(--galaxy-text-secondary); margin-bottom: 24px; }
-.form-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.cheating-page { max-width: 700px; }
+.header { margin-bottom: 32px; }
+.header h1 { font-family: 'Space Grotesk'; font-size: 28px; margin: 0 0 8px; }
+.desc { color: var(--galaxy-text-secondary); font-size: 15px; margin: 0; }
+.action-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+.input-group { display: flex; align-items: center; gap: 8px; }
+.label { font-size: 14px; color: var(--galaxy-text-secondary); }
+.empty { text-align: center; padding: 40px 0; color: var(--galaxy-text-secondary); }
+
 .reports { display: flex; flex-direction: column; gap: 16px; }
-.report-card { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: 8px; padding: 20px; }
-.report-card.flagged { border-left: 4px solid var(--galaxy-error); }
-.report-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.score { font-family: 'Space Grotesk'; font-weight: 700; }
-.detail { color: var(--galaxy-text-secondary); line-height: 1.6; margin: 0; }
+.report-card {
+  background: var(--galaxy-card); border: 1px solid var(--galaxy-border);
+  border-radius: 12px; padding: 24px; border-left: 4px solid var(--galaxy-success);
+}
+.report-card.flagged { border-left-color: var(--galaxy-error); }
+.report-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.status-badge {
+  font-size: 16px; font-weight: 700; padding: 6px 16px; border-radius: 6px;
+}
+.status-badge.cleared { color: var(--galaxy-success); background: rgba(61, 170, 82, 0.1); }
+.status-badge.flagged { color: var(--galaxy-error); background: rgba(232, 93, 93, 0.1); }
+.conf-display { text-align: right; }
+.conf-num { font-family: 'Space Grotesk'; font-size: 28px; font-weight: 700; display: block; }
+.conf-label { font-size: 12px; color: var(--galaxy-text-secondary); }
+.report-detail { font-size: 15px; line-height: 1.6; color: var(--galaxy-text); margin: 0 0 12px; }
+.report-time { font-size: 12px; color: var(--galaxy-text-secondary); }
 </style>
