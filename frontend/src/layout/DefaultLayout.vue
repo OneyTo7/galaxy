@@ -12,6 +12,29 @@ const roleLabel = computed(() => {
   return m[auth.role] || auth.role
 })
 
+const navItems = computed(() => {
+  if (auth.role === 'student') return [
+    { to: '/dashboard', label: '首页' },
+    { to: '/submit', label: '提交作业' },
+    { to: '/diagnose', label: '误区诊断' },
+    { to: '/variant', label: '变式练习' },
+    { to: '/appeal', label: '申诉' },
+  ]
+  if (auth.role === 'teacher') return [
+    { to: '/dashboard', label: '首页' },
+    { to: '/assignment-generate', label: 'AI命题' },
+    { to: '/learning-report', label: '学情看板' },
+    { to: '/appeal', label: '申诉' },
+    { to: '/cheating', label: '反作弊' },
+    { to: '/gradebook', label: '成绩册' },
+  ]
+  if (auth.role === 'admin') return [
+    { to: '/dashboard', label: '首页' },
+    { to: '/admin', label: '管理' },
+  ]
+  return [{ to: '/dashboard', label: '首页' }]
+})
+
 function logout() {
   auth.logout()
   router.push('/login')
@@ -26,15 +49,7 @@ function logout() {
         <span class="logo-sub">AI 认知诊断实验教学平台</span>
       </div>
       <nav class="topbar-nav">
-        <router-link to="/dashboard" :class="{ active: route.path === '/dashboard' }">首页</router-link>
-        <router-link to="/submit" :class="{ active: route.path === '/submit' }">提交作业</router-link>
-        <router-link to="/diagnose" :class="{ active: route.path === '/diagnose' }">误区诊断</router-link>
-        <router-link to="/variant" :class="{ active: route.path === '/variant' }">变式练习</router-link>
-        <router-link to="/learning-report" :class="{ active: route.path === '/learning-report' }">学情看板</router-link>
-        <router-link to="/assignment-generate" :class="{ active: route.path === '/assignment-generate' }">AI命题</router-link>
-        <router-link to="/appeal" :class="{ active: route.path === '/appeal' }">申诉</router-link>
-        <router-link to="/cheating" :class="{ active: route.path === '/cheating' }">反作弊</router-link>
-        <router-link to="/gradebook" :class="{ active: route.path === '/gradebook' }">成绩册</router-link>
+        <router-link v-for="item in navItems" :key="item.to" :to="item.to" :class="{ active: route.path === item.to }">{{ item.label }}</router-link>
       </nav>
       <div class="topbar-right">
         <span class="role-tag">{{ roleLabel }}</span>
