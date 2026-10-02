@@ -32,6 +32,9 @@ function logout() {
         <router-link to="/variant" :class="{ active: route.path === '/variant' }">变式练习</router-link>
         <router-link to="/learning-report" :class="{ active: route.path === '/learning-report' }">学情看板</router-link>
         <router-link to="/assignment-generate" :class="{ active: route.path === '/assignment-generate' }">AI命题</router-link>
+        <router-link to="/appeal" :class="{ active: route.path === '/appeal' }">申诉</router-link>
+        <router-link to="/cheating" :class="{ active: route.path === '/cheating' }">反作弊</router-link>
+        <router-link to="/gradebook" :class="{ active: route.path === '/gradebook' }">成绩册</router-link>
       </nav>
       <div class="topbar-right">
         <span class="role-tag">{{ roleLabel }}</span>

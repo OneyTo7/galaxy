@@ -14,7 +14,10 @@ const router = createRouter({
         { path: 'diagnose', name: 'diagnose', component: () => import('@/views/student/Diagnose.vue') },
         { path: 'variant', name: 'variant', component: () => import('@/views/student/Variant.vue') },
         { path: 'learning-report', name: 'learning-report', component: () => import('@/views/teacher/LearningDashboard.vue') },
-        { path: 'assignment-generate', name: 'assignment-generate', component: () => import('@/views/teacher/AssignmentGenerate.vue') }
+        { path: 'assignment-generate', name: 'assignment-generate', component: () => import('@/views/teacher/AssignmentGenerate.vue') },
+        { path: 'appeal', name: 'appeal', component: () => import('@/views/Appeal.vue') },
+        { path: 'cheating', name: 'cheating', component: () => import('@/views/CheatingReport.vue') },
+        { path: 'gradebook', name: 'gradebook', component: () => import('@/views/Gradebook.vue') }
       ]
     }
   ]

@@ -80,3 +80,39 @@ export interface AssignmentOut {
     order: number
   }[]
 }
+
+export interface AppealOut {
+  id: number
+  submission_id: number
+  student_id: number
+  reason: string
+  status: string
+  approved: boolean | null
+  review_comment: string
+  reviewer_id: number | null
+  new_score: number | null
+  created_at: string
+  reviewed_at: string | null
+}
+
+export interface CheatingReportOut {
+  id: number
+  submission_id: number
+  student_id: number
+  check_type: string
+  score: number
+  detail: string
+  status: string
+  created_at: string
+}
+
+export interface GradeOut {
+  id: number
+  assignment_id: number
+  student_id: number
+  final_score: number
+  status: string
+  note: string
+  created_at: string
+  updated_at: string
+}
