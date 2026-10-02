@@ -91,7 +91,7 @@ async def list_published(
 @router.get("/{assignment_id}", response_model=AssignmentOut)
 async def get_assignment(
     assignment_id: int,
-    teacher: CurrentUser = Depends(require_teacher),
+    user: CurrentUser = Depends(get_current_user),
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> AssignmentOut:
     try:
