@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { checkCheating, getCheatingReports } from '@/api/cheating'
 import { ElMessage } from 'element-plus'
 import type { CheatingReportOut } from '@/types/api'
 
-const submissionId = ref(8)
+const route = useRoute()
+const submissionId = ref(Number(route.query.submission) || 8)
 const reports = ref<CheatingReportOut[]>([])
 const loading = ref(false)
 

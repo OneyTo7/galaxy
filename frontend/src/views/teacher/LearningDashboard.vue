@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart, BarChart } from 'echarts/charts'
@@ -11,7 +12,8 @@ import type { LearningReport } from '@/types/api'
 
 use([CanvasRenderer, PieChart, BarChart, TooltipComponent, LegendComponent, GridComponent])
 
-const assignmentId = ref(2)
+const route = useRoute()
+const assignmentId = ref(Number(route.query.assignment) || 2)
 const report = ref<LearningReport | null>(null)
 const loading = ref(false)
 

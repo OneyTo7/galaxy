@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { diagnose } from '@/api/diagnose'
 import { ElMessage } from 'element-plus'
 import type { DiagnoseOut } from '@/types/api'
 
-const submissionId = ref(8)
+const route = useRoute()
+const submissionId = ref(Number(route.query.submission) || 8)
 const result = ref<DiagnoseOut | null>(null)
 const loading = ref(false)
 

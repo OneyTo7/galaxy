@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { createAppeal, listPendingAppeals, reviewAppeal } from '@/api/appeal'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import type { AppealOut } from '@/types/api'
 
 const auth = useAuthStore()
-const submissionId = ref(8)
+const route = useRoute()
+const submissionId = ref(Number(route.query.submission) || 8)
 const reason = ref('')
 const appeals = ref<AppealOut[]>([])
 const loading = ref(false)

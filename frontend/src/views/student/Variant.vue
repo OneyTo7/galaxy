@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { generateVariant } from '@/api/variant'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { ElMessage } from 'element-plus'
 import type { VariantOut } from '@/types/api'
 
-const submissionId = ref(8)
+const route = useRoute()
+const router = useRouter()
+const submissionId = ref(Number(route.query.submission) || 8)
 const variant = ref<VariantOut | null>(null)
 const code = ref('')
 const loading = ref(false)

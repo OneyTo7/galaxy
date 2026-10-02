@@ -106,6 +106,13 @@ export interface CheatingReportOut {
   created_at: string
 }
 
+export interface EnrollmentOut {
+  id: number
+  class_id: number
+  student_id: number
+  created_at: string
+}
+
 export interface GradeOut {
   id: number
   assignment_id: number

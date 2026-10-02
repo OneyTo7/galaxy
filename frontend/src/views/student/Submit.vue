@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
 import { submit, getEvaluation } from '@/api/submission'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { ElMessage } from 'element-plus'
@@ -8,7 +9,8 @@ import type { EvaluationOut } from '@/types/api'
 const POLL_INTERVAL = 2000
 const MAX_POLL_COUNT = 30
 
-const form = reactive({ assignment_id: 2, code: 'print("hello world")', lang: 'python' })
+const route = useRoute()
+const form = reactive({ assignment_id: Number(route.query.assignment) || 2, code: 'print("hello world")', lang: 'python' })
 const submissionId = ref<number | null>(null)
 const evaluation = ref<EvaluationOut | null>(null)
 const loading = ref(false)

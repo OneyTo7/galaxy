@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { generateGradebook, getGradebook } from '@/api/grade'
 import { ElMessage } from 'element-plus'
 import type { GradeOut } from '@/types/api'
 
-const assignmentId = ref(2)
+const route = useRoute()
+const assignmentId = ref(Number(route.query.assignment) || 2)
 const grades = ref<GradeOut[]>([])
 const loading = ref(false)
 

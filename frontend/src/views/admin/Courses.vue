@@ -2,6 +2,7 @@
 import { ref, watch, onMounted } from 'vue'
 import { listCourses, createCourse, listClasses, createClass, listEnrollments } from '@/api/organization'
 import { ElMessage } from 'element-plus'
+import type { EnrollmentOut } from '@/types/api'
 
 interface Course { id: number; name: string; code: string }
 interface ClassItem { id: number; course_id: number; name: string }
@@ -9,7 +10,7 @@ interface ClassItem { id: number; course_id: number; name: string }
 const courses = ref<Course[]>([])
 const selectedCourse = ref<number | null>(null)
 const classes = ref<ClassItem[]>([])
-const enrollments = ref<{ id: number; student_id: number }[]>([])
+const enrollments = ref<EnrollmentOut[]>([])
 const courseForm = ref({ name: '', code: '' })
 const classForm = ref('')
 
