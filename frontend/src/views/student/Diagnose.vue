@@ -1,19 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { diagnose } from '@/api/diagnose'
+import { listMySubmissions } from '@/api/submission'
 import { ElMessage } from 'element-plus'
-import type { DiagnoseOut } from '@/types/api'
+import type { DiagnoseOut, SubmissionOut } from '@/types/api'
 
 const route = useRoute()
 const router = useRouter()
-const submissionId = ref(Number(route.query.submission) || 0)
+const submissions = ref<SubmissionOut[]>([])
+const submissionId = ref(Number(route.query.submission) || undefined)
 const result = ref<DiagnoseOut | null>(null)
 const loading = ref(false)
 
+async function loadSubmissions() {
+  try {
+    submissions.value = await listMySubmissions()
+  } catch (e) {
+    console.error('加载提交列表失败', e)
+  }
+}
+
 async function handleDiagnose() {
   if (!submissionId.value) {
-    ElMessage.warning('请先从「我的提交」选择一条提交记录')
+    ElMessage.warning('请先选择一条提交记录')
     return
   }
   loading.value = true
@@ -26,6 +36,7 @@ async function handleDiagnose() {
     loading.value = false
   }
 }
+onMounted(loadSubmissions)
 </script>
 
 <template>
@@ -37,8 +48,10 @@ async function handleDiagnose() {
 
     <div class="action-bar">
       <div class="input-group">
-        <span class="label">提交 ID</span>
-        <el-input-number v-model="submissionId" :min="1" controls-position="right" style="width: 120px" />
+        <span class="label">选择提交</span>
+        <el-select v-model="submissionId" placeholder="选择一条提交" style="width: 240px">
+          <el-option v-for="s in submissions" :key="s.id" :label="`#${s.id} 作业${s.assignment_id} ${s.status} ${s.score}分`" :value="s.id" />
+        </el-select>
       </div>
       <el-button type="primary" :loading="loading" @click="handleDiagnose">开始诊断</el-button>
       <el-button text @click="router.push('/my-submissions')">从我的提交选择</el-button>

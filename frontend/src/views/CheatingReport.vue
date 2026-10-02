@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { checkCheating, getCheatingReports } from '@/api/cheating'
+import { listMySubmissions } from '@/api/submission'
 import { ElMessage } from 'element-plus'
-import type { CheatingReportOut } from '@/types/api'
+import type { CheatingReportOut, SubmissionOut } from '@/types/api'
 
 const route = useRoute()
-const submissionId = ref(Number(route.query.submission) || 0)
+const submissions = ref<SubmissionOut[]>([])
+const submissionId = ref(Number(route.query.submission) || undefined)
 const reports = ref<CheatingReportOut[]>([])
 const loading = ref(false)
+
+async function loadSubmissions() {
+  try { submissions.value = await listMySubmissions() } catch (e) { console.error('加载提交列表失败', e) }
+}
+
+onMounted(loadSubmissions)
 
 async function handleCheck() {
   if (!submissionId.value) {
@@ -37,8 +45,10 @@ async function handleCheck() {
 
     <div class="action-bar">
       <div class="input-group">
-        <span class="label">提交 ID</span>
-        <el-input-number v-model="submissionId" :min="1" controls-position="right" style="width: 120px" />
+        <span class="label">选择提交</span>
+        <el-select v-model="submissionId" placeholder="选择一条提交" style="width: 240px">
+          <el-option v-for="s in submissions" :key="s.id" :label="`#${s.id} 作业${s.assignment_id} ${s.status} ${s.score}分`" :value="s.id" />
+        </el-select>
       </div>
       <el-button type="primary" :loading="loading" @click="handleCheck">开始检测</el-button>
     </div>

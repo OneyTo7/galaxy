@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { createAppeal, listPendingAppeals, reviewAppeal } from '@/api/appeal'
+import { listMySubmissions } from '@/api/submission'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
-import type { AppealOut } from '@/types/api'
+import type { AppealOut, SubmissionOut } from '@/types/api'
 
 const auth = useAuthStore()
 const route = useRoute()
-const submissionId = ref(Number(route.query.submission) || 8)
+const submissions = ref<SubmissionOut[]>([])
+const submissionId = ref(Number(route.query.submission) || undefined)
 const reason = ref('')
 const appeals = ref<AppealOut[]>([])
 const loading = ref(false)
 const reviewDialog = ref(false)
 const currentAppeal = ref<AppealOut | null>(null)
 const reviewForm = ref({ approved: true, comment: '', new_score: null as number | null })
+
+async function loadSubmissions() {
+  try { submissions.value = await listMySubmissions() } catch (e) { console.error('加载提交列表失败', e) }
+}
 
 async function handleSubmit() {
   loading.value = true
@@ -60,6 +66,7 @@ async function handleReview() {
     loading.value = false
   }
 }
+onMounted(loadSubmissions)
 </script>
 
 <template>
@@ -68,8 +75,10 @@ async function handleReview() {
     <div v-if="auth.role === 'student'" class="section">
       <h3>提交申诉</h3>
       <div class="form-bar">
-        <span>提交 ID</span>
-        <el-input-number v-model="submissionId" :min="1" />
+        <span>选择提交</span>
+        <el-select v-model="submissionId" placeholder="选择一条提交" style="width: 240px">
+          <el-option v-for="s in submissions" :key="s.id" :label="`#${s.id} 作业${s.assignment_id} ${s.status} ${s.score}分`" :value="s.id" />
+        </el-select>
       </div>
       <el-input v-model="reason" type="textarea" :rows="3" placeholder="申诉理由" />
       <div style="margin-top: 12px">

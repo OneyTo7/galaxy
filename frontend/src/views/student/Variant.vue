@@ -1,17 +1,33 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { generateVariant } from '@/api/variant'
+import { listMySubmissions } from '@/api/submission'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { ElMessage } from 'element-plus'
-import type { VariantOut } from '@/types/api'
+import type { VariantOut, SubmissionOut } from '@/types/api'
 
 const route = useRoute()
 const router = useRouter()
-const submissionId = ref(Number(route.query.submission) || 0)
+const submissions = ref<SubmissionOut[]>([])
+const submissionId = ref(Number(route.query.submission) || undefined)
 const variant = ref<VariantOut | null>(null)
 const code = ref('')
 const loading = ref(false)
+
+async function loadSubmissions() {
+  try { submissions.value = await listMySubmissions() } catch (e) { console.error('加载提交列表失败', e) }
+}
+
+async function handleGenerate() {
+  if (!submissionId.value) { ElMessage.warning('请先选择一条提交记录'); return }
+  loading.value = true; variant.value = null
+  try { variant.value = await generateVariant(submissionId); code = '' }
+  catch (e: any) { ElMessage.error(e.response?.data?.detail || '生成失败') }
+  finally { loading.value = false }
+}
+
+onMounted(loadSubmissions)
 </script>
 
 <template>
@@ -23,15 +39,12 @@ const loading = ref(false)
 
     <div v-if="!variant" class="action-bar">
       <div class="input-group">
-        <span class="label">提交 ID</span>
-        <el-input-number v-model="submissionId" :min="1" controls-position="right" style="width: 120px" />
+        <span class="label">选择提交</span>
+        <el-select v-model="submissionId" placeholder="选择一条提交" style="width: 240px">
+          <el-option v-for="s in submissions" :key="s.id" :label="`#${s.id} 作业${s.assignment_id} ${s.status} ${s.score}分`" :value="s.id" />
+        </el-select>
       </div>
-      <el-button type="primary" :loading="loading" @click="async () => {
-        loading = true; variant = null
-        try { variant = await generateVariant(submissionId); code = '' }
-        catch (e: any) { ElMessage.error(e.response?.data?.detail || '生成失败') }
-        finally { loading = false }
-      }">生成变式题</el-button>
+      <el-button type="primary" :loading="loading" @click="handleGenerate">生成变式题</el-button>
       <el-button text @click="router.push('/my-submissions')">从我的提交选择</el-button>
     </div>
 
