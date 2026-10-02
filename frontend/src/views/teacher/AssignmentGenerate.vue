@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { generateAssignment } from '@/api/assignment'
+import { listCourses } from '@/api/organization'
 import { ElMessage } from 'element-plus'
 import type { AssignmentOut } from '@/types/api'
 
 const router = useRouter()
 const prompt = ref('')
 const courseId = ref<number | null>(null)
+const courses = ref<{ id: number; name: string; code: string }[]>([])
 const result = ref<AssignmentOut | null>(null)
 const loading = ref(false)
 
@@ -16,6 +18,10 @@ const examples = [
   '出一道考察循环终止条件的中等题',
   '出一道考察递归基础的中等题',
 ]
+
+async function loadCourses() {
+  try { courses.value = await listCourses() } catch (e) { console.error('加载课程失败', e) }
+}
 
 async function handleGenerate() {
   if (!prompt.value.trim()) {
@@ -33,6 +39,8 @@ async function handleGenerate() {
     loading.value = false
   }
 }
+
+onMounted(loadCourses)
 </script>
 
 <template>
@@ -50,8 +58,10 @@ async function handleGenerate() {
       </div>
       <div class="action-bar">
         <div class="course-input">
-          <span class="label">课程 ID（选填）</span>
-          <el-input-number v-model="courseId" :min="1" controls-position="right" style="width: 100px" />
+          <span class="label">课程（选填）</span>
+          <el-select v-model="courseId" placeholder="选择课程" clearable style="width: 200px">
+            <el-option v-for="c in courses" :key="c.id" :label="`${c.name} (${c.code})`" :value="c.id" />
+          </el-select>
         </div>
         <el-button type="primary" :loading="loading" @click="handleGenerate">生成作业</el-button>
       </div>
