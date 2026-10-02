@@ -10,8 +10,12 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(username: string, password: string) {
     const res = await loginApi(username, password)
     token.value = res.access_token
-    const payload = JSON.parse(atob(res.access_token.split('.')[1]))
-    role.value = payload.role || ''
+    try {
+      const payload = JSON.parse(atob(res.access_token.split('.')[1]))
+      role.value = payload.role || ''
+    } catch {
+      role.value = ''
+    }
     localStorage.setItem('token', token.value)
     localStorage.setItem('role', role.value)
   }

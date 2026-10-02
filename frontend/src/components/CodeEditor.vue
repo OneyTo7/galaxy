@@ -3,7 +3,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import * as monaco from 'monaco-editor'
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 
-self.MonacoEnvironment = { getWorker: () => new editorWorker() }
+;(self as any).MonacoEnvironment = { getWorker: () => new editorWorker() }
 
 const props = defineProps<{ modelValue: string; lang?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()

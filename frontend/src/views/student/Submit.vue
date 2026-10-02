@@ -3,12 +3,17 @@ import { ref, reactive, onBeforeUnmount } from 'vue'
 import { submit, getEvaluation } from '@/api/submission'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { ElMessage } from 'element-plus'
+import type { EvaluationOut } from '@/types/api'
+
+const POLL_INTERVAL = 2000
+const MAX_POLL_COUNT = 30
 
 const form = reactive({ assignment_id: 2, code: 'print("hello world")', lang: 'python' })
 const submissionId = ref<number | null>(null)
-const evaluation = ref<any>(null)
+const evaluation = ref<EvaluationOut | null>(null)
 const loading = ref(false)
 let pollTimer: number | null = null
+let pollCount = 0
 
 async function handleSubmit() {
   loading.value = true
@@ -16,6 +21,7 @@ async function handleSubmit() {
   try {
     const res = await submit(form.assignment_id, form.code, form.lang)
     submissionId.value = res.submission_id
+    pollCount = 0
     ElMessage.success('已提交，等待评测...')
     startPolling()
   } catch (e: any) {
@@ -29,15 +35,24 @@ function startPolling() {
   if (pollTimer) clearInterval(pollTimer)
   pollTimer = window.setInterval(async () => {
     if (!submissionId.value) return
+    pollCount++
+    if (pollCount > MAX_POLL_COUNT) {
+      if (pollTimer) clearInterval(pollTimer)
+      pollTimer = null
+      ElMessage.warning('评测超时，请稍后查看结果')
+      return
+    }
     try {
       const res = await getEvaluation(submissionId.value)
       evaluation.value = res
       if (res.status === 'done') {
-        clearInterval(pollTimer!)
+        if (pollTimer) clearInterval(pollTimer)
         pollTimer = null
       }
-    } catch {}
-  }, 2000)
+    } catch (e) {
+      console.error('评测查询失败', e)
+    }
+  }, POLL_INTERVAL)
 }
 
 onBeforeUnmount(() => {

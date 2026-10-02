@@ -5,19 +5,24 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart, BarChart } from 'echarts/charts'
 import { TooltipComponent, LegendComponent, GridComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { ElMessage } from 'element-plus'
 import { getAssignmentReport } from '@/api/report'
+import type { LearningReport } from '@/types/api'
 
 use([CanvasRenderer, PieChart, BarChart, TooltipComponent, LegendComponent, GridComponent])
 
 const assignmentId = ref(2)
-const report = ref<any>(null)
+const report = ref<LearningReport | null>(null)
 const loading = ref(false)
 
 async function load() {
   loading.value = true
   try {
     report.value = await getAssignmentReport(assignmentId.value)
-  } catch {} finally {
+  } catch (e) {
+    console.error('加载学情报告失败', e)
+    ElMessage.error('加载学情报告失败')
+  } finally {
     loading.value = false
   }
 }
@@ -30,18 +35,18 @@ const pieOption = computed(() => ({
   series: [{
     type: 'pie',
     radius: ['40%', '70%'],
-    data: report.value?.misconception_stats?.map((s: any) => ({ name: s.misconception_type, value: s.count })) || [],
+    data: report.value?.misconception_stats?.map((s) => ({ name: s.misconception_type, value: s.count })) || [],
     color: ['#5B7FFF', '#E8A345', '#3DAA52', '#E85D5D'],
   }],
 }))
 
 const barOption = computed(() => ({
   tooltip: { trigger: 'axis' },
-  xAxis: { type: 'category', data: report.value?.knowledge_stats?.map((s: any) => s.knowledge_point) || [], axisLabel: { rotate: 30 } },
+  xAxis: { type: 'category', data: report.value?.knowledge_stats?.map((s) => s.knowledge_point) || [], axisLabel: { rotate: 30 } },
   yAxis: { type: 'value' },
   series: [{
     type: 'bar',
-    data: report.value?.knowledge_stats?.map((s: any) => s.count) || [],
+    data: report.value?.knowledge_stats?.map((s) => s.count) || [],
     itemStyle: { color: '#5B7FFF', borderRadius: [4, 4, 0, 0] },
   }],
 }))
