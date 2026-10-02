@@ -9,3 +9,8 @@ export async function getEvaluation(submission_id: number) {
   const res = await request.get(`/submissions/${submission_id}/evaluation`)
   return res.data
 }
+
+export async function listMySubmissions() {
+  const res = await request.get('/submissions/mine')
+  return res.data
+}

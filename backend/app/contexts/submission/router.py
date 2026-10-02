@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.contexts.evaluation.schemas import CaseResultOut
 from app.contexts.submission.deps import get_submission_service
-from app.contexts.submission.schemas import EvaluationOut, SubmissionCreate
+from app.contexts.submission.schemas import EvaluationOut, SubmissionCreate, SubmissionDomain, SubmissionOut
 from app.contexts.submission.service import SubmissionService
 from app.core.deps import CurrentUser, get_current_user
 from app.core.exceptions import ForbiddenError, NotFoundError
@@ -31,6 +31,21 @@ async def submit(
         status=domain.status,
         results=[],
     )
+
+
+def _to_out(d: SubmissionDomain) -> SubmissionOut:
+    return SubmissionOut(
+        id=d.id, user_id=d.user_id, assignment_id=d.assignment_id,
+        lang=d.lang, status=d.status, score=d.score, created_at=d.created_at,
+    )
+
+
+@router.get("/mine", response_model=list[SubmissionOut])
+async def my_submissions(
+    user: CurrentUser = Depends(get_current_user),
+    svc: SubmissionService = Depends(get_submission_service),
+) -> list[SubmissionOut]:
+    return [_to_out(d) for d in svc.list_mine(user.id)]
 
 
 @router.get("/{submission_id}/evaluation", response_model=EvaluationOut)

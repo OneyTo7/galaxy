@@ -80,6 +80,14 @@ async def list_assignments(
     return [_to_out(d) for d in svc.list_mine(teacher.id)]
 
 
+@router.get("/published", response_model=list[AssignmentOut])
+async def list_published(
+    user: CurrentUser = Depends(get_current_user),
+    svc: AssignmentService = Depends(get_assignment_service),
+) -> list[AssignmentOut]:
+    return [_to_out(d) for d in svc.list_published()]
+
+
 @router.get("/{assignment_id}", response_model=AssignmentOut)
 async def get_assignment(
     assignment_id: int,

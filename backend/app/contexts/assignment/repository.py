@@ -11,6 +11,7 @@ class AssignmentRepoProtocol:
     def get(self, assignment_id: int) -> AssignmentDomain | None: ...
     def list_by_teacher(self, teacher_id: int) -> list[AssignmentDomain]: ...
     def list_by_course(self, course_id: int) -> list[AssignmentDomain]: ...
+    def list_published(self) -> list[AssignmentDomain]: ...
     def update(self, assignment_id: int, data: dict) -> AssignmentDomain | None: ...
     def delete(self, assignment_id: int) -> bool: ...
 
@@ -58,6 +59,15 @@ class SQLAlchemyAssignmentRepo(AssignmentRepoProtocol):
         rows = (
             self._db.query(Assignment)
             .filter(Assignment.course_id == course_id)
+            .order_by(Assignment.created_at.desc())
+            .all()
+        )
+        return [self._to_domain(a) for a in rows]
+
+    def list_published(self):
+        rows = (
+            self._db.query(Assignment)
+            .filter(Assignment.status == "published")
             .order_by(Assignment.created_at.desc())
             .all()
         )

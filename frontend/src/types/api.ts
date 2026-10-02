@@ -58,6 +58,16 @@ export interface VariantOut {
   lang: string
 }
 
+export interface SubmissionOut {
+  id: number
+  user_id: number
+  assignment_id: number
+  lang: string
+  status: string
+  score: number
+  created_at: string
+}
+
 export interface AssignmentOut {
   id: number
   teacher_id: number

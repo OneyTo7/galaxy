@@ -10,6 +10,8 @@ const router = createRouter({
       children: [
         { path: '', redirect: '/dashboard' },
         { path: 'dashboard', name: 'dashboard', component: () => import('@/views/Dashboard.vue') },
+        { path: 'assignments', name: 'assignments', component: () => import('@/views/AssignmentList.vue') },
+        { path: 'my-submissions', name: 'my-submissions', component: () => import('@/views/student/MySubmissions.vue') },
         { path: 'submit', name: 'submit', component: () => import('@/views/student/Submit.vue') },
         { path: 'diagnose', name: 'diagnose', component: () => import('@/views/student/Diagnose.vue') },
         { path: 'variant', name: 'variant', component: () => import('@/views/student/Variant.vue') },

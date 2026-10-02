@@ -17,6 +17,7 @@ class SubmissionRepoProtocol:
         score: int,
     ) -> SubmissionDomain: ...
     def get(self, submission_id: int) -> SubmissionDomain | None: ...
+    def list_by_user(self, user_id: int) -> list[SubmissionDomain]: ...
     def update_status_score(self, submission_id: int, status: str, score: int) -> SubmissionDomain | None: ...
     def list_by_assignment(self, assignment_id: int) -> list[SubmissionDomain]: ...
 
@@ -59,6 +60,15 @@ class SQLAlchemySubmissionRepo(SubmissionRepoProtocol):
     def get(self, submission_id):
         s = self._db.get(Submission, submission_id)
         return self._to_domain(s) if s else None
+
+    def list_by_user(self, user_id):
+        rows = (
+            self._db.query(Submission)
+            .filter(Submission.user_id == user_id)
+            .order_by(Submission.created_at.desc())
+            .all()
+        )
+        return [self._to_domain(s) for s in rows]
 
     def list_by_assignment(self, assignment_id):
         rows = (

@@ -5,6 +5,21 @@ export async function listAssignments() {
   return res.data
 }
 
+export async function listPublished() {
+  const res = await request.get('/assignments/published')
+  return res.data
+}
+
+export async function publishAssignment(id: number) {
+  const res = await request.put(`/assignments/${id}`, { status: 'published' })
+  return res.data
+}
+
+export async function deleteAssignment(id: number) {
+  const res = await request.delete(`/assignments/${id}`)
+  return res.data
+}
+
 export async function getAssignment(id: number) {
   const res = await request.get(`/assignments/${id}`)
   return res.data

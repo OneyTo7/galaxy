@@ -65,3 +65,6 @@ class SubmissionService:
 
     def list_by_assignment(self, assignment_id: int) -> list[SubmissionDomain]:
         return self._sub_repo.list_by_assignment(assignment_id)
+
+    def list_mine(self, user_id: int) -> list[SubmissionDomain]:
+        return self._sub_repo.list_by_user(user_id)

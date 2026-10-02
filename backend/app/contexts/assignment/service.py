@@ -42,6 +42,9 @@ class AssignmentService:
     def list_by_course(self, course_id: int) -> list[AssignmentDomain]:
         return self._repo.list_by_course(course_id)
 
+    def list_published(self) -> list[AssignmentDomain]:
+        return self._repo.list_published()
+
     async def generate(self, teacher_id: int, course_id: int | None, prompt: str) -> AssignmentDomain:
         if course_id:
             course = self._org_svc.get_course(course_id)
