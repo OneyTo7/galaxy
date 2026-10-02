@@ -1,0 +1,29 @@
+:root {
+  --galaxy-bg: #F7F8FA;
+  --galaxy-card: #FFFFFF;
+  --galaxy-text: #1B2838;
+  --galaxy-text-secondary: #6B7785;
+  --galaxy-border: #E1E4E8;
+  --galaxy-accent: #5B7FFF;
+  --galaxy-warning: #E8A345;
+  --galaxy-success: #3DAA52;
+  --galaxy-error: #E85D5D;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--galaxy-bg);
+  color: var(--galaxy-text);
+  margin: 0;
+}
+
+h1, h2, h3 {
+  font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+  font-weight: 700;
+}
+
+code, .mono {
+  font-family: 'JetBrains Mono', monospace;
+}
