@@ -13,7 +13,7 @@ from app.contexts.assignment.schemas import (
     TestCaseOut,
 )
 from app.contexts.assignment.service import AssignmentService
-from app.core.deps import CurrentUser, require_teacher
+from app.core.deps import CurrentUser, get_current_user, require_teacher
 from app.core.exceptions import ForbiddenError, NotFoundError
 
 router = APIRouter(prefix="/api/assignments", tags=["assignment"])

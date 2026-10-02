@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, watch, onMounted } from 'vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart, BarChart } from 'echarts/charts'
@@ -8,28 +7,42 @@ import { TooltipComponent, LegendComponent, GridComponent } from 'echarts/compon
 import VChart from 'vue-echarts'
 import { ElMessage } from 'element-plus'
 import { getAssignmentReport } from '@/api/report'
-import type { LearningReport } from '@/types/api'
+import { listAssignments } from '@/api/assignment'
+import type { LearningReport, AssignmentOut } from '@/types/api'
 
 use([CanvasRenderer, PieChart, BarChart, TooltipComponent, LegendComponent, GridComponent])
 
-const route = useRoute()
-const assignmentId = ref(Number(route.query.assignment) || 2)
+const assignments = ref<AssignmentOut[]>([])
+const selectedId = ref<number | null>(null)
 const report = ref<LearningReport | null>(null)
 const loading = ref(false)
 
-async function load() {
-  loading.value = true
+async function loadAssignments() {
   try {
-    report.value = await getAssignmentReport(assignmentId.value)
+    assignments.value = await listAssignments()
+    if (assignments.value.length > 0) {
+      selectedId.value = assignments.value[0].id
+    }
   } catch (e) {
-    console.error('加载学情报告失败', e)
-    ElMessage.error('加载学情报告失败')
+    console.error('加载作业列表失败', e)
+  }
+}
+
+async function loadReport() {
+  if (!selectedId.value) return
+  loading.value = true
+  report.value = null
+  try {
+    report.value = await getAssignmentReport(selectedId.value)
+  } catch (e: any) {
+    ElMessage.error(e.response?.data?.detail || '加载学情报告失败')
   } finally {
     loading.value = false
   }
 }
 
-watch(assignmentId, load, { immediate: true })
+watch(selectedId, loadReport)
+onMounted(loadAssignments)
 
 const pieOption = computed(() => ({
   tooltip: { trigger: 'item' },
@@ -57,39 +70,54 @@ const barOption = computed(() => ({
 <template>
   <div class="dashboard-page">
     <h1>学情看板</h1>
+    <p class="desc">选择作业，查看学生提交情况、误区分布与知识点薄弱。</p>
     <div class="filter-bar">
-      <span>作业 ID</span>
-      <el-input-number v-model="assignmentId" :min="1" />
-      <el-button :loading="loading" @click="load">刷新</el-button>
+      <el-select v-model="selectedId" placeholder="选择作业" style="width: 400px" :loading="loading" @change="loadReport">
+        <el-option v-for="a in assignments" :key="a.id" :label="a.title" :value="a.id" />
+      </el-select>
+      <el-button :loading="loading" @click="loadReport">刷新</el-button>
     </div>
-    <div v-if="report" class="stats-row">
-      <div class="stat-card"><div class="stat-label">提交数</div><div class="stat-value">{{ report.submission_count }}</div></div>
-      <div class="stat-card"><div class="stat-label">平均分</div><div class="stat-value">{{ report.avg_score }}</div></div>
+
+    <div v-if="!selectedId && assignments.length === 0" class="empty">
+      <p>暂无作业，先去 AI 命题生成一道吧。</p>
     </div>
-    <div v-if="report" class="charts-row">
-      <div class="chart-card">
-        <h3>误区分布</h3>
-        <v-chart class="chart" :option="pieOption" autoresize />
+
+    <div v-if="selectedId && !loading && !report" class="empty">
+      <p>暂无提交数据。</p>
+    </div>
+
+    <div v-if="report" class="report-content">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">提交数</div><div class="stat-value">{{ report.submission_count }}</div></div>
+        <div class="stat-card"><div class="stat-label">平均分</div><div class="stat-value">{{ report.avg_score }}</div></div>
       </div>
-      <div class="chart-card">
-        <h3>知识点薄弱</h3>
-        <v-chart class="chart" :option="barOption" autoresize />
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>误区分布</h3>
+          <v-chart class="chart" :option="pieOption" autoresize />
+        </div>
+        <div class="chart-card">
+          <h3>知识点薄弱</h3>
+          <v-chart class="chart" :option="barOption" autoresize />
+        </div>
       </div>
-    </div>
-    <div v-if="report?.students?.length" class="students">
-      <h3>学生列表</h3>
-      <el-table :data="report.students" border>
-        <el-table-column prop="user_id" label="学生 ID" width="100" />
-        <el-table-column prop="score" label="得分" width="80" />
-        <el-table-column prop="misconception_type" label="误区" />
-      </el-table>
+      <div v-if="report.students?.length" class="students">
+        <h3>学生列表</h3>
+        <el-table :data="report.students" border>
+          <el-table-column prop="user_id" label="学生 ID" width="100" />
+          <el-table-column prop="score" label="得分" width="80" />
+          <el-table-column prop="misconception_type" label="误区" />
+        </el-table>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .dashboard-page { max-width: 1200px; }
+.desc { color: var(--galaxy-text-secondary); margin-bottom: 24px; }
 .filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.empty { text-align: center; padding: 60px 0; color: var(--galaxy-text-secondary); }
 .stats-row { display: flex; gap: 16px; margin-bottom: 24px; }
 .stat-card { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: 8px; padding: 20px; flex: 1; }
 .stat-label { font-size: 13px; color: var(--galaxy-text-secondary); margin-bottom: 8px; }
