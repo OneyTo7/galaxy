@@ -2,19 +2,60 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.contexts.assignment.deps import get_assignment_service
+from app.contexts.assignment.service import AssignmentService
 from app.contexts.organization.deps import get_organization_service
-from app.contexts.organization.schemas import (
-    ClassCreate,
-    ClassOut,
-    CourseCreate,
-    CourseOut,
-    EnrollmentOut,
-)
+from app.contexts.organization.schemas import ClassCreate, ClassOut, CourseCreate, CourseDomain, CourseOut, EnrollmentOut
 from app.contexts.organization.service import OrganizationService
 from app.core.deps import CurrentUser, get_current_user, require_teacher
 from app.core.exceptions import NotFoundError
 
 router = APIRouter(prefix="/api", tags=["organization"])
+
+
+def _course_out(d: CourseDomain) -> CourseOut:
+    return CourseOut(id=d.id, teacher_id=d.teacher_id, name=d.name, code=d.code, created_at=d.created_at)
+
+
+def _assign_out(d) -> dict:
+    return {
+        "id": d.id, "teacher_id": d.teacher_id, "course_id": d.course_id,
+        "title": d.title, "description": d.description[:120] + "..." if len(d.description) > 120 else d.description,
+        "lang": d.lang, "status": d.status, "created_at": d.created_at.isoformat(),
+        "test_cases": [],
+    }
+
+
+@router.get("/courses/mine", tags=["organization"])
+async def my_courses(
+    user: CurrentUser = Depends(get_current_user),
+    svc: OrganizationService = Depends(get_organization_service),
+):
+    if user.role == "teacher":
+        return [_course_out(c) for c in svc.list_my_courses(user.id)]
+    return [_course_out(c) for c in svc.list_student_courses(user.id)]
+
+
+@router.get("/courses/{course_id}/assignments", tags=["organization"])
+async def course_assignments(
+    course_id: int,
+    user: CurrentUser = Depends(get_current_user),
+    org_svc: OrganizationService = Depends(get_organization_service),
+    assign_svc: AssignmentService = Depends(get_assignment_service),
+):
+    domains = assign_svc.list_by_course(course_id)
+    if user.role == "student":
+        domains = [d for d in domains if d.status == "published"]
+    return [_assign_out(d) for d in domains]
+
+
+@router.get("/courses/{course_id}/students", tags=["organization"])
+async def course_students(
+    course_id: int,
+    teacher: CurrentUser = Depends(require_teacher),
+    svc: OrganizationService = Depends(get_organization_service),
+):
+    return svc.list_course_students(course_id)
 
 
 @router.post("/courses", response_model=CourseOut, status_code=status.HTTP_201_CREATED)

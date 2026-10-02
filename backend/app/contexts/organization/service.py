@@ -47,3 +47,9 @@ class OrganizationService:
 
     def is_enrolled(self, student_id: int, course_id: int) -> bool:
         return self._repo.is_enrolled(student_id, course_id)
+
+    def list_student_courses(self, student_id: int) -> list[CourseDomain]:
+        return self._repo.list_courses_by_student(student_id)
+
+    def list_course_students(self, course_id: int) -> list[tuple[int, str]]:
+        return self._repo.list_students_by_course(course_id)

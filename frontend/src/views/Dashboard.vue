@@ -1,119 +1,192 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { listMyCourses, listCourseAssignments, listCourseStudents } from '@/api/organization'
+import { ElMessage } from 'element-plus'
+
+interface Course {
+  id: number
+  name: string
+  code: string
+  teacher_id: number
+  created_at: string
+}
+
+interface CourseAssign {
+  id: number
+  title: string
+  status: string
+  lang: string
+}
 
 const auth = useAuthStore()
 const router = useRouter()
+const courses = ref<Course[]>([])
+const loading = ref(false)
+const selectedCourse = ref<Course | null>(null)
+const assignments = ref<CourseAssign[]>([])
+const students = ref<[number, string][]>([])
+const detailLoading = ref(false)
 
-const roleLabel = computed(() => {
-  const m: Record<string, string> = { student: '同学', teacher: '老师', admin: '管理员' }
-  return m[auth.role] || auth.role
-})
+async function loadCourses() {
+  loading.value = true
+  try {
+    courses.value = await listMyCourses()
+    if (courses.value.length > 0) {
+      selectCourse(courses.value[0])
+    }
+  } catch (e) {
+    console.error('加载课程失败', e)
+  } finally {
+    loading.value = false
+  }
+}
 
-const studentActions = [
-  { icon: '📝', title: '去做作业', desc: '查看可提交的作业', to: '/assignments' },
-  { icon: '🔍', title: '误区诊断', desc: '看 AI 分析你的代码误区', to: '/diagnose' },
-  { icon: '🎯', title: '变式练习', desc: '换情境练同类题', to: '/variant' },
-  { icon: '📋', title: '我的提交', desc: '查看提交记录与成绩', to: '/my-submissions' },
-]
+async function selectCourse(c: Course) {
+  selectedCourse.value = c
+  detailLoading.value = true
+  assignments.value = []
+  students.value = []
+  try {
+    const [a, s] = await Promise.all([
+      listCourseAssignments(c.id),
+      auth.role === 'teacher' ? listCourseStudents(c.id) : Promise.resolve([]),
+    ])
+    assignments.value = a
+    students.value = s
+  } catch (e) {
+    console.error('加载课程详情失败', e)
+  } finally {
+    detailLoading.value = false
+  }
+}
 
-const teacherActions = [
-  { icon: '✨', title: 'AI 命题', desc: '一句话生成完整作业', to: '/assignment-generate' },
-  { icon: '📊', title: '学情看板', desc: '看班级误区分布与薄弱点', to: '/learning-report' },
-  { icon: '🛡️', title: '反作弊', desc: 'AI 代写检测', to: '/cheating' },
-  { icon: '📈', title: '成绩册', desc: '生成成绩册', to: '/gradebook' },
-]
+onMounted(loadCourses)
 </script>
 
 <template>
-  <div class="dashboard">
-    <div class="welcome">
-      <h1>你好，{{ roleLabel }}</h1>
-      <p class="welcome-desc">在这里{{ auth.role === 'student' ? '做作业、看诊断、练变式' : '命题、看学情、管教学' }}。</p>
+  <div class="courses-page">
+    <div class="header">
+      <h1>我的课程</h1>
+      <el-button v-if="auth.role === 'teacher'" type="primary" @click="router.push('/admin')">创建课程</el-button>
+    </div>
+    <p class="desc">{{ auth.role === 'teacher' ? '管理你的课程、作业与班级学情。' : '查看你选的课程，做作业、看诊断、查成绩。' }}</p>
+
+    <div v-if="!loading && courses.length === 0" class="empty">
+      <p class="empty-text">{{ auth.role === 'teacher' ? '暂无课程，去创建一门吧' : '暂未选课' }}</p>
+      <el-button v-if="auth.role === 'teacher'" type="primary" @click="router.push('/admin')">创建课程</el-button>
     </div>
 
-    <div class="actions-grid">
-      <div
-        v-for="a in (auth.role === 'student' ? studentActions : teacherActions)"
-        :key="a.to"
-        class="action-card"
-        @click="router.push(a.to)"
-      >
-        <span class="action-icon">{{ a.icon }}</span>
-        <div class="action-text">
-          <h3>{{ a.title }}</h3>
-          <p>{{ a.desc }}</p>
+    <div v-else class="layout">
+      <aside class="course-list">
+        <div
+          v-for="c in courses"
+          :key="c.id"
+          class="course-item"
+          :class="{ active: selectedCourse?.id === c.id }"
+          @click="selectCourse(c)"
+        >
+          <h4>{{ c.name }}</h4>
+          <span class="course-code">{{ c.code }}</span>
         </div>
-        <span class="action-arrow">→</span>
-      </div>
+      </aside>
+
+      <main class="course-detail" v-loading="detailLoading">
+        <template v-if="selectedCourse">
+          <div class="detail-header">
+            <h2>{{ selectedCourse.name }}</h2>
+            <span class="course-code-tag">{{ selectedCourse.code }}</span>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <span class="stat-num">{{ assignments.length }}</span>
+              <span class="stat-label">作业</span>
+            </div>
+            <div class="stat" v-if="auth.role === 'teacher'">
+              <span class="stat-num">{{ students.length }}</span>
+              <span class="stat-label">学生</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num">{{ assignments.filter(a => a.status === 'published').length }}</span>
+              <span class="stat-label">已发布</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-header">
+              <h3>课程作业</h3>
+              <el-button v-if="auth.role === 'teacher'" size="small" @click="router.push('/assignment-generate')">AI命题</el-button>
+            </div>
+            <div v-if="assignments.length === 0" class="section-empty">暂无作业</div>
+            <div v-for="a in assignments" :key="a.id" class="assignment-row">
+              <div class="assign-info">
+                <span class="assign-title">{{ a.title }}</span>
+                <el-tag :type="a.status === 'published' ? 'success' : 'info'" size="small">
+                  {{ a.status === 'published' ? '已发布' : '草稿' }}
+                </el-tag>
+                <span class="assign-lang">{{ a.lang }}</span>
+              </div>
+              <el-button v-if="auth.role === 'student'" size="small" type="primary" @click="router.push(`/submit?assignment=${a.id}`)">去做</el-button>
+            </div>
+          </div>
+
+          <div v-if="auth.role === 'teacher' && students.length" class="section">
+            <h3>选课学生</h3>
+            <el-table :data="students.map(([id, cls]) => ({ student_id: id, class_name: cls }))" border size="small">
+              <el-table-column prop="student_id" label="学生 ID" width="100" />
+              <el-table-column prop="class_name" label="班级" />
+            </el-table>
+          </div>
+        </template>
+      </main>
     </div>
   </div>
 </template>
 
 <style scoped>
-.dashboard { max-width: 1000px; }
+.courses-page { max-width: 1100px; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.header h1 { font-family: 'Space Grotesk'; font-size: 28px; margin: 0; }
+.desc { color: var(--galaxy-text-secondary); font-size: 15px; margin: 0 0 24px; }
 
-.welcome { margin-bottom: 40px; }
-.welcome h1 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 36px;
-  margin: 0 0 8px;
-}
-.welcome-desc {
-  color: var(--galaxy-text-secondary);
-  font-size: 16px;
-  margin: 0;
-}
+.empty { text-align: center; padding: 60px 0; }
+.empty-text { color: var(--galaxy-text-secondary); margin-bottom: 16px; }
 
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+.layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; }
+.course-list { display: flex; flex-direction: column; gap: 8px; }
+.course-item {
+  background: var(--galaxy-card-solid); border: 1px solid var(--galaxy-border);
+  border-radius: 8px; padding: 14px 16px; cursor: pointer; transition: all 0.15s;
 }
+.course-item:hover { border-color: var(--galaxy-accent); }
+.course-item.active { border-color: var(--galaxy-accent); background: var(--galaxy-accent-soft); }
+.course-item h4 { margin: 0 0 4px; font-size: 14px; }
+.course-code { font-size: 12px; color: var(--galaxy-text-secondary); font-family: 'JetBrains Mono'; }
 
-.action-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: var(--galaxy-card);
-  border: 1px solid var(--galaxy-border);
-  border-radius: 12px;
-  padding: 24px;
-  cursor: pointer;
-  transition: all 0.2s;
+.course-detail {
+  background: var(--galaxy-card-solid); border: 1px solid var(--galaxy-border);
+  border-radius: 12px; padding: 24px; min-height: 400px;
 }
+.detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.detail-header h2 { margin: 0; font-size: 22px; }
+.course-code-tag { font-size: 12px; color: var(--galaxy-text-secondary); background: var(--galaxy-bg); padding: 4px 10px; border-radius: 4px; }
 
-.action-card:hover {
-  border-color: var(--galaxy-accent);
-  box-shadow: 0 4px 12px rgba(91, 127, 255, 0.1);
-  transform: translateY(-1px);
-}
+.stats-row { display: flex; gap: 24px; margin-bottom: 32px; }
+.stat { display: flex; flex-direction: column; align-items: center; }
+.stat-num { font-family: 'Space Grotesk'; font-size: 32px; font-weight: 700; color: var(--galaxy-accent); }
+.stat-label { font-size: 13px; color: var(--galaxy-text-secondary); }
 
-.action-icon {
-  font-size: 32px;
-  flex-shrink: 0;
+.section { margin-bottom: 32px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.section-header h3 { font-size: 16px; margin: 0; }
+.section-empty { color: var(--galaxy-text-secondary); font-size: 14px; padding: 16px 0; }
+.assignment-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--galaxy-border);
 }
-
-.action-text h3 {
-  margin: 0 0 4px;
-  font-size: 17px;
-}
-
-.action-text p {
-  margin: 0;
-  color: var(--galaxy-text-secondary);
-  font-size: 14px;
-}
-
-.action-arrow {
-  color: var(--galaxy-text-secondary);
-  font-size: 20px;
-  transition: transform 0.2s;
-}
-
-.action-card:hover .action-arrow {
-  color: var(--galaxy-accent);
-  transform: translateX(4px);
-}
+.assign-info { display: flex; align-items: center; gap: 8px; }
+.assign-title { font-size: 14px; }
+.assign-lang { font-size: 12px; color: var(--galaxy-text-secondary); }
 </style>

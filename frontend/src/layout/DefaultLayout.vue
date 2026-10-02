@@ -14,17 +14,14 @@ const roleLabel = computed(() => {
 
 const navItems = computed(() => {
   if (auth.role === 'student') return [
-    { to: '/dashboard', label: '首页' },
-    { to: '/assignments', label: '作业列表' },
+    { to: '/dashboard', label: '我的课程' },
     { to: '/my-submissions', label: '我的提交' },
-    { to: '/submit', label: '提交作业' },
     { to: '/diagnose', label: '误区诊断' },
     { to: '/variant', label: '变式练习' },
     { to: '/appeal', label: '申诉' },
   ]
   if (auth.role === 'teacher') return [
-    { to: '/dashboard', label: '首页' },
-    { to: '/assignments', label: '我的作业' },
+    { to: '/dashboard', label: '我的课程' },
     { to: '/assignment-generate', label: 'AI命题' },
     { to: '/admin', label: '课程管理' },
     { to: '/learning-report', label: '学情看板' },

@@ -20,6 +20,8 @@ class OrganizationRepoProtocol:
     def create_enrollment(self, class_id: int, student_id: int) -> EnrollmentDomain: ...
     def list_enrollments_by_class(self, class_id: int) -> list[EnrollmentDomain]: ...
     def is_enrolled(self, student_id: int, course_id: int) -> bool: ...
+    def list_courses_by_student(self, student_id: int) -> list[CourseDomain]: ...
+    def list_students_by_course(self, course_id: int) -> list[tuple[int, str]]: ...
 
 
 class SQLOrganizationRepo(OrganizationRepoProtocol):
@@ -106,3 +108,24 @@ class SQLOrganizationRepo(OrganizationRepoProtocol):
             .first()
         )
         return enrolled is not None
+
+    def list_courses_by_student(self, student_id):
+        rows = (
+            self._db.query(Course)
+            .join(Class, Class.course_id == Course.id)
+            .join(Enrollment, Enrollment.class_id == Class.id)
+            .filter(Enrollment.student_id == student_id)
+            .distinct()
+            .all()
+        )
+        return [self._course_to_domain(c) for c in rows]
+
+    def list_students_by_course(self, course_id):
+        rows = (
+            self._db.query(Enrollment.student_id, Class.name)
+            .join(Class, Class.id == Enrollment.class_id)
+            .filter(Class.course_id == course_id)
+            .distinct()
+            .all()
+        )
+        return [(r[0], r[1]) for r in rows]
