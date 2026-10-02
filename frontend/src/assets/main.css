@@ -1,29 +1,82 @@
 :root {
-  --galaxy-bg: #F7F8FA;
-  --galaxy-card: #FFFFFF;
+  --galaxy-bg: #F0F2F8;
+  --galaxy-card: rgba(255, 255, 255, 0.82);
+  --galaxy-card-solid: #FFFFFF;
   --galaxy-text: #1B2838;
   --galaxy-text-secondary: #6B7785;
-  --galaxy-border: #E1E4E8;
+  --galaxy-border: rgba(0, 0, 0, 0.06);
   --galaxy-accent: #5B7FFF;
+  --galaxy-accent-soft: rgba(91, 127, 255, 0.08);
   --galaxy-warning: #E8A345;
   --galaxy-success: #3DAA52;
   --galaxy-error: #E85D5D;
+  --galaxy-shadow: 0 2px 8px rgba(27, 40, 56, 0.06);
+  --galaxy-shadow-hover: 0 8px 24px rgba(91, 127, 255, 0.12);
+  --galaxy-radius: 12px;
+  --galaxy-blur: blur(12px);
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 body {
   font-family: 'Noto Sans SC', sans-serif;
-  background: var(--galaxy-bg);
   color: var(--galaxy-text);
   margin: 0;
+  min-height: 100vh;
+  background: var(--galaxy-bg);
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(91, 127, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(232, 163, 69, 0.04) 0%, transparent 50%),
+    linear-gradient(180deg, var(--galaxy-bg) 0%, #E8EAF2 100%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(91, 127, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 127, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
 }
 
 h1, h2, h3 {
   font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-code, .mono {
+code, .mono, pre {
   font-family: 'JetBrains Mono', monospace;
+}
+
+a { color: var(--galaxy-accent); }
+
+.el-button--primary {
+  background: var(--galaxy-accent) !important;
+  border-color: var(--galaxy-accent) !important;
+}
+.el-button--primary:hover {
+  filter: brightness(1.1);
+}
+
+.el-card, .el-table {
+  background: var(--galaxy-card-solid);
+}
+
+.el-dialog {
+  border-radius: var(--galaxy-radius) !important;
+  overflow: hidden;
+}
+
+.el-dialog__header {
+  border-bottom: 1px solid var(--galaxy-border);
 }

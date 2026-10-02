@@ -68,40 +68,45 @@ function logout() {
 <style scoped>
 .app-layout {
   min-height: 100vh;
-  background: var(--galaxy-bg);
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
-  height: 64px;
-  background: var(--galaxy-card);
+  padding: 0 40px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: var(--galaxy-blur);
+  -webkit-backdrop-filter: var(--galaxy-blur);
   border-bottom: 1px solid var(--galaxy-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .topbar-left {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logo {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--galaxy-accent);
+  letter-spacing: -0.02em;
 }
 
 .logo-sub {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--galaxy-text-secondary);
 }
 
 .topbar-nav {
   display: flex;
-  gap: 24px;
+  gap: 4px;
 }
 
 .topbar-nav a {
@@ -109,14 +114,20 @@ function logout() {
   color: var(--galaxy-text-secondary);
   font-size: 14px;
   font-weight: 500;
-  padding: 8px 0;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.topbar-nav a:hover {
+  background: var(--galaxy-accent-soft);
+  color: var(--galaxy-accent);
 }
 
 .topbar-nav a.active {
+  background: var(--galaxy-accent-soft);
   color: var(--galaxy-accent);
-  border-bottom-color: var(--galaxy-accent);
+  font-weight: 600;
 }
 
 .topbar-right {
@@ -128,15 +139,17 @@ function logout() {
 .role-tag {
   font-size: 12px;
   color: var(--galaxy-accent);
-  background: rgba(91, 127, 255, 0.1);
+  background: var(--galaxy-accent-soft);
   padding: 4px 12px;
-  border-radius: 4px;
-  font-weight: 500;
+  border-radius: 20px;
+  font-weight: 600;
 }
 
 .content {
-  padding: 32px;
-  max-width: 1400px;
+  padding: 40px 24px;
+  max-width: 1100px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 </style>
