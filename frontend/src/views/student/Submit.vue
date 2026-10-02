@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { submit, getEvaluation } from '@/api/submission'
 import { getAssignment } from '@/api/assignment'
@@ -77,77 +77,184 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="submit-page">
-    <!-- 作业详情 -->
-    <div v-if="assignment" class="assignment-detail">
+  <div v-if="!assignment" class="no-assignment">
+    <p>未指定作业，请从<a href="/assignments">作业列表</a>选择一道题。</p>
+  </div>
+
+  <div v-else class="split-layout">
+    <!-- 左侧：题目 -->
+    <aside class="problem-panel">
       <h1>{{ assignment.title }}</h1>
       <div class="meta">
-        <el-tag>语言 {{ assignment.lang }}</el-tag>
-        <el-tag type="info">{{ assignment.test_cases?.length || 0 }} 个测试用例</el-tag>
+        <el-tag size="small">语言 {{ assignment.lang }}</el-tag>
+        <el-tag size="small" type="info">{{ assignment.test_cases?.length || 0 }} 个用例</el-tag>
       </div>
-      <div class="desc-section">
+      <div class="section">
         <h3>题目描述</h3>
         <p class="desc-text">{{ assignment.description }}</p>
       </div>
-      <div v-if="assignment.test_cases?.some(tc => !tc.is_hidden)" class="cases-section">
+      <div v-if="assignment.test_cases?.some(tc => !tc.is_hidden)" class="section">
         <h3>公开用例</h3>
         <div v-for="tc in assignment.test_cases.filter(tc => !tc.is_hidden)" :key="tc.id" class="case-item">
           <span class="case-name">{{ tc.name || '用例 ' + tc.id }}</span>
           <pre>输入: {{ tc.input }}</pre>
-          <pre>期望输出: {{ tc.expected_output }}</pre>
+          <pre>期望: {{ tc.expected_output }}</pre>
         </div>
       </div>
-    </div>
+    </aside>
 
-    <div v-else class="no-assignment">
-      <p>未指定作业，请从<a href="/assignments">作业列表</a>选择一道题。</p>
-    </div>
-
-    <!-- 代码编辑器 -->
-    <div v-if="assignment" class="editor-section">
-      <h3>你的代码</h3>
-      <CodeEditor v-model="form.code" :lang="form.lang" />
-      <div class="actions">
+    <!-- 右侧：代码 + 评测 -->
+    <main class="code-panel">
+      <div class="code-header">
+        <h3>代码编辑</h3>
         <el-button type="primary" :loading="loading" @click="handleSubmit">提交评测</el-button>
       </div>
-    </div>
+      <CodeEditor v-model="form.code" :lang="form.lang" />
 
-    <!-- 评测结果 -->
-    <div v-if="evaluation" class="result">
-      <div class="result-header">
-        <el-tag :type="evaluation.status === 'done' ? 'success' : 'warning'">{{ evaluation.status }}</el-tag>
-        <span v-if="evaluation.status === 'done'" class="score">得分 {{ evaluation.score }}</span>
+      <div v-if="evaluation" class="result">
+        <div class="result-header">
+          <el-tag :type="evaluation.status === 'done' ? 'success' : 'warning'">{{ evaluation.status }}</el-tag>
+          <span v-if="evaluation.status === 'done'" class="score">得分 {{ evaluation.score }}</span>
+        </div>
+        <div v-for="r in evaluation.results" :key="r.case_id" class="case-result" :class="{ fail: !r.passed }">
+          <span class="case-icon">{{ r.passed ? '✓' : '✗' }}</span>
+          <span>用例 {{ r.case_id }}</span>
+          <span v-if="r.stderr" class="case-err">{{ r.stderr }}</span>
+          <span v-if="r.timed_out" class="case-err">超时</span>
+        </div>
       </div>
-      <div v-for="r in evaluation.results" :key="r.case_id" class="case" :class="{ fail: !r.passed }">
-        <span class="case-icon">{{ r.passed ? '✓' : '✗' }}</span>
-        <span>用例 {{ r.case_id }}</span>
-        <span v-if="r.stderr" class="case-err">{{ r.stderr }}</span>
-        <span v-if="r.timed_out" class="case-err">超时</span>
-      </div>
-    </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
-.submit-page { max-width: 900px; }
-.assignment-detail { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: 8px; padding: 24px; margin-bottom: 24px; }
-.assignment-detail h1 { margin: 0 0 12px; font-size: 24px; }
-.meta { display: flex; gap: 8px; margin-bottom: 20px; }
-.desc-section h3, .cases-section h3, .editor-section h3 { font-size: 16px; margin: 0 0 12px; }
-.desc-text { color: var(--galaxy-text-secondary); white-space: pre-wrap; line-height: 1.6; }
-.cases-section { margin-top: 20px; }
-.case-item { background: var(--galaxy-bg); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
-.case-name { font-weight: 500; }
-.case-item pre { margin: 8px 0 0; font-family: 'JetBrains Mono'; font-size: 13px; color: var(--galaxy-text-secondary); }
-.editor-section { margin-bottom: 24px; }
-.actions { margin-top: 16px; }
-.no-assignment { text-align: center; padding: 60px 0; color: var(--galaxy-text-secondary); }
+.no-assignment {
+  text-align: center;
+  padding: 80px 0;
+  color: var(--galaxy-text-secondary);
+}
 .no-assignment a { color: var(--galaxy-accent); }
-.result { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: 8px; padding: 20px; }
-.result-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.score { font-family: 'Space Grotesk'; font-size: 20px; font-weight: 700; color: var(--galaxy-accent); }
-.case { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--galaxy-border); }
-.case.fail { color: var(--galaxy-error); }
+
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  height: calc(100vh - 64px - 64px);
+}
+
+/* 左侧题目 */
+.problem-panel {
+  background: var(--galaxy-card);
+  border: 1px solid var(--galaxy-border);
+  border-radius: 8px;
+  padding: 24px;
+  overflow-y: auto;
+}
+.problem-panel h1 {
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+.meta {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.section {
+  margin-bottom: 24px;
+}
+.section h3 {
+  font-size: 15px;
+  margin: 0 0 10px;
+  color: var(--galaxy-text);
+}
+.desc-text {
+  color: var(--galaxy-text-secondary);
+  white-space: pre-wrap;
+  line-height: 1.7;
+  font-size: 14px;
+}
+.case-item {
+  background: var(--galaxy-bg);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.case-name {
+  font-weight: 500;
+  font-size: 14px;
+}
+.case-item pre {
+  margin: 6px 0 0;
+  font-family: 'JetBrains Mono';
+  font-size: 12px;
+  color: var(--galaxy-text-secondary);
+}
+
+/* 右侧代码 */
+.code-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--galaxy-card);
+  border: 1px solid var(--galaxy-border);
+  border-radius: 8px;
+  padding: 12px 20px;
+}
+.code-header h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.code-header :deep(.code-editor) {
+  height: 500px;
+}
+
+/* 评测结果 */
+.result {
+  background: var(--galaxy-card);
+  border: 1px solid var(--galaxy-border);
+  border-radius: 8px;
+  padding: 20px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.score {
+  font-family: 'Space Grotesk';
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--galaxy-accent);
+}
+.case-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--galaxy-border);
+  font-size: 14px;
+}
+.case-result.fail { color: var(--galaxy-error); }
 .case-icon { font-weight: 700; }
-.case-err { color: var(--galaxy-error); font-family: 'JetBrains Mono'; font-size: 13px; }
+.case-err {
+  color: var(--galaxy-error);
+  font-family: 'JetBrains Mono';
+  font-size: 12px;
+}
+
+/* 响应式：窄屏改上下布局 */
+@media (max-width: 900px) {
+  .split-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
 </style>
