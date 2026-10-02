@@ -9,7 +9,9 @@ const router = createRouter({
       component: () => import('@/layout/DefaultLayout.vue'),
       children: [
         { path: '', redirect: '/dashboard' },
-        { path: 'dashboard', name: 'dashboard', component: () => import('@/views/Dashboard.vue') }
+        { path: 'dashboard', name: 'dashboard', component: () => import('@/views/Dashboard.vue') },
+        { path: 'submit', name: 'submit', component: () => import('@/views/student/Submit.vue') },
+        { path: 'learning-report', name: 'learning-report', component: () => import('@/views/teacher/LearningDashboard.vue') }
       ]
     }
   ]

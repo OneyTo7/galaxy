@@ -27,6 +27,8 @@ function logout() {
       </div>
       <nav class="topbar-nav">
         <router-link to="/dashboard" :class="{ active: route.path === '/dashboard' }">首页</router-link>
+        <router-link to="/submit" :class="{ active: route.path === '/submit' }">提交作业</router-link>
+        <router-link to="/learning-report" :class="{ active: route.path === '/learning-report' }">学情看板</router-link>
       </nav>
       <div class="topbar-right">
         <span class="role-tag">{{ roleLabel }}</span>
