@@ -45,16 +45,19 @@ function logout() {
 <template>
   <div class="app-layout">
     <header class="topbar">
-      <div class="topbar-left">
-        <span class="logo">智学</span>
-        <span class="logo-sub">AI 认知诊断实验教学平台</span>
-      </div>
-      <nav class="topbar-nav">
-        <router-link v-for="item in navItems" :key="item.to" :to="item.to" :class="{ active: route.path === item.to }">{{ item.label }}</router-link>
-      </nav>
-      <div class="topbar-right">
-        <span class="role-tag">{{ roleLabel }}</span>
-        <el-button text @click="logout">退出</el-button>
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="logo">智学</span>
+        </div>
+        <nav class="nav">
+          <router-link v-for="item in navItems" :key="item.to" :to="item.to" :class="{ active: route.path === item.to }">
+            {{ item.label }}
+          </router-link>
+        </nav>
+        <div class="user-area">
+          <span class="role-pill">{{ roleLabel }}</span>
+          <el-button text size="small" @click="logout">退出</el-button>
+        </div>
       </div>
     </header>
     <main class="content">
@@ -64,90 +67,70 @@ function logout() {
 </template>
 
 <style scoped>
-.app-layout {
-  min-height: 100vh;
-}
+.app-layout { min-height: 100vh; }
 
 .topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 40px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: var(--galaxy-blur);
-  -webkit-backdrop-filter: var(--galaxy-blur);
-  border-bottom: 1px solid var(--galaxy-border);
   position: sticky;
   top: 0;
   z-index: 100;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid var(--galaxy-border);
 }
 
-.topbar-left {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.logo {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--galaxy-accent);
-  letter-spacing: -0.02em;
-}
-
-.logo-sub {
-  font-size: 12px;
-  color: var(--galaxy-text-secondary);
-}
-
-.topbar-nav {
-  display: flex;
-  gap: 4px;
-}
-
-.topbar-nav a {
-  text-decoration: none;
-  color: var(--galaxy-text-secondary);
-  font-size: 14px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 8px;
-  transition: all 0.15s;
-}
-
-.topbar-nav a:hover {
-  background: var(--galaxy-accent-soft);
-  color: var(--galaxy-accent);
-}
-
-.topbar-nav a.active {
-  background: var(--galaxy-accent-soft);
-  color: var(--galaxy-accent);
-  font-weight: 600;
-}
-
-.topbar-right {
+.topbar-inner {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
 }
 
-.role-tag {
-  font-size: 12px;
+.brand { flex-shrink: 0; }
+.logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--galaxy-accent);
+  letter-spacing: -0.03em;
+}
+
+.nav { display: flex; gap: 2px; flex: 1; justify-content: center; }
+.nav a {
+  text-decoration: none;
+  color: var(--galaxy-text-secondary);
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  transition: all 0.15s;
+}
+.nav a:hover { background: var(--galaxy-accent-soft); color: var(--galaxy-accent); }
+.nav a.active { background: var(--galaxy-accent); color: #fff; font-weight: 600; }
+
+.user-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.role-pill {
+  font-size: var(--fs-small);
   color: var(--galaxy-accent);
   background: var(--galaxy-accent-soft);
-  padding: 4px 12px;
+  padding: 3px 12px;
   border-radius: 20px;
   font-weight: 600;
 }
 
 .content {
-  padding: 40px 24px;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 40px 24px;
   width: 100%;
-  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .topbar-inner { padding: 0 16px; }
+  .nav { overflow-x: auto; justify-content: flex-start; }
+  .content { padding: 20px 16px; }
 }
 </style>
