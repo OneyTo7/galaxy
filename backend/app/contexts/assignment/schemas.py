@@ -25,7 +25,7 @@ class AssignmentCreate(BaseModel):
     course_id: Optional[int] = None
     title: str = Field(min_length=1, max_length=200)
     description: str = ""
-    lang: str = Field(default="python", pattern="^(java|python)$")
+    lang: str = Field(default="python", pattern="^(python|c|cpp|java)$")
     scoring_rubric: str = ""
     reference_code: str = ""
     test_cases: list[TestCaseIn] = []
