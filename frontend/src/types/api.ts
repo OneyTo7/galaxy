@@ -39,3 +39,44 @@ export interface LearningReport {
   knowledge_stats: KnowledgeStat[]
   students: StudentStat[]
 }
+
+export interface DiagnoseOut {
+  submission_id: number
+  misconception_type: string
+  evidence: string
+  knowledge_point: string
+  confidence: number
+}
+
+export interface VariantOut {
+  id: number
+  submission_id: number
+  title: string
+  description: string
+  cases: { input: string; expected_output: string }[]
+  scoring_points: string[]
+  lang: string
+}
+
+export interface AssignmentOut {
+  id: number
+  teacher_id: number
+  course_id: number | null
+  title: string
+  description: string
+  lang: string
+  scoring_rubric: string
+  reference_code: string
+  status: string
+  created_at: string
+  test_cases: {
+    id: number
+    assignment_id: number
+    name: string
+    input: string
+    expected_output: string
+    is_hidden: boolean
+    weight: number
+    order: number
+  }[]
+}

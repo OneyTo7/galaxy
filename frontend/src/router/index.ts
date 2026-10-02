@@ -11,7 +11,10 @@ const router = createRouter({
         { path: '', redirect: '/dashboard' },
         { path: 'dashboard', name: 'dashboard', component: () => import('@/views/Dashboard.vue') },
         { path: 'submit', name: 'submit', component: () => import('@/views/student/Submit.vue') },
-        { path: 'learning-report', name: 'learning-report', component: () => import('@/views/teacher/LearningDashboard.vue') }
+        { path: 'diagnose', name: 'diagnose', component: () => import('@/views/student/Diagnose.vue') },
+        { path: 'variant', name: 'variant', component: () => import('@/views/student/Variant.vue') },
+        { path: 'learning-report', name: 'learning-report', component: () => import('@/views/teacher/LearningDashboard.vue') },
+        { path: 'assignment-generate', name: 'assignment-generate', component: () => import('@/views/teacher/AssignmentGenerate.vue') }
       ]
     }
   ]
