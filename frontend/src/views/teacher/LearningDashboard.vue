@@ -45,28 +45,53 @@ watch(selectedId, loadReport)
 onMounted(loadAssignments)
 
 const pieOption = computed(() => ({
-  tooltip: { trigger: 'item', backgroundColor: '#161B22', borderColor: '#30363D', textStyle: { color: '#E6EDF3' } },
-  legend: { bottom: 0, textStyle: { color: '#8B949E' } },
+  tooltip: { trigger: 'item', backgroundColor: '#1A2632', borderColor: '#2A3641', textStyle: { color: '#E2E8F0' } },
+  legend: { bottom: 0, textStyle: { color: '#94A3B8', fontSize: 12 } },
   series: [{
     type: 'pie',
-    radius: ['40%', '70%'],
+    radius: ['45%', '72%'],
     data: report.value?.misconception_stats?.map((s) => ({ name: s.misconception_type, value: s.count })) || [],
-    color: ['#5B7FFF', '#E8A345', '#3FB950', '#F85149', '#A371F7', '#39D0D8'],
-    itemStyle: { borderColor: '#0D1117', borderWidth: 2 },
-    label: { color: '#8B949E' },
+    color: ['#5B7FFF', '#39D0D8', '#A371F7', '#3FB950', '#E8A345', '#F85149'],
+    itemStyle: { borderColor: '#0F1923', borderWidth: 2, borderRadius: 4 },
+    label: { color: '#94A3B8', fontSize: 12 },
+    emphasis: { itemStyle: { shadowBlur: 20, shadowColor: 'rgba(91, 127, 255, 0.3)' } },
   }],
 }))
 
 const barOption = computed(() => ({
-  tooltip: { trigger: 'axis', backgroundColor: '#161B22', borderColor: '#30363D', textStyle: { color: '#E6EDF3' } },
-  xAxis: { type: 'category', data: report.value?.knowledge_stats?.map((s) => s.knowledge_point) || [], axisLabel: { rotate: 30, color: '#8B949E' }, axisLine: { lineStyle: { color: '#30363D' } } },
-  yAxis: { type: 'value', axisLabel: { color: '#8B949E' }, splitLine: { lineStyle: { color: 'rgba(48,54,61,0.4)' } } },
-  grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
+  tooltip: { trigger: 'axis', backgroundColor: '#1A2632', borderColor: '#2A3641', textStyle: { color: '#E2E8F0' }, axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(91, 127, 255, 0.05)' } } },
+  xAxis: { type: 'category', data: report.value?.knowledge_stats?.map((s) => s.knowledge_point) || [], axisLabel: { rotate: 30, color: '#94A3B8', fontSize: 12 }, axisLine: { lineStyle: { color: '#2A3641' } } },
+  yAxis: { type: 'value', axisLabel: { color: '#94A3B8', fontSize: 12 }, splitLine: { lineStyle: { color: 'rgba(42, 54, 65, 0.4)' } } },
+  grid: { left: '3%', right: '5%', bottom: '12%', top: '5%', containLabel: true },
   series: [{
     type: 'bar',
     data: report.value?.knowledge_stats?.map((s) => s.count) || [],
-    itemStyle: { color: '#5B7FFF', borderRadius: [4, 4, 0, 0] },
-    barWidth: '50%',
+    itemStyle: {
+      borderRadius: [4, 4, 0, 0],
+      color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: '#5B7FFF' }, { offset: 1, color: '#39D0D8' }] },
+    },
+    barWidth: '45%',
+    emphasis: { itemStyle: { shadowBlur: 15, shadowColor: 'rgba(91, 127, 255, 0.4)' } },
+  }],
+}))
+
+const radarOption = computed(() => ({
+  tooltip: { backgroundColor: '#1A2632', borderColor: '#2A3641', textStyle: { color: '#E2E8F0' } },
+  radar: {
+    indicator: (report.value?.misconception_stats?.map(s => ({ name: s.misconception_type, max: s.count + 2 })) || []).slice(0, 6),
+    axisName: { color: '#94A3B8', fontSize: 12 },
+    splitLine: { lineStyle: { color: 'rgba(42, 54, 65, 0.5)' } },
+    splitArea: { areaStyle: { color: ['rgba(15, 25, 35, 0.3)', 'rgba(22, 32, 40, 0.3)'] } },
+    axisLine: { lineStyle: { color: 'rgba(42, 54, 65, 0.6)' } },
+  },
+  series: [{
+    type: 'radar',
+    data: [{
+      value: report.value?.misconception_stats?.map(s => s.count) || [],
+      itemStyle: { color: '#5B7FFF' },
+      areaStyle: { color: 'rgba(91, 127, 255, 0.15)' },
+      lineStyle: { color: '#5B7FFF', width: 2 },
+    }],
   }],
 }))
 </script>
@@ -105,6 +130,12 @@ const barOption = computed(() => ({
           <v-chart class="chart" :option="barOption" autoresize />
         </div>
       </div>
+      <div class="charts-row">
+        <div class="chart-card chart-wide">
+          <h3>误区雷达</h3>
+          <v-chart class="chart" :option="radarOption" autoresize />
+        </div>
+      </div>
       <div v-if="report.students?.length" class="students">
         <h3>学生列表</h3>
         <el-table :data="report.students" border>
@@ -127,8 +158,9 @@ const barOption = computed(() => ({
 .stat-label { font-size: 13px; color: var(--galaxy-text-secondary); margin-bottom: 8px; }
 .stat-value { font-family: 'Space Grotesk'; font-size: 28px; font-weight: 700; }
 .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
-.chart-card { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: 8px; padding: 20px; }
+.chart-card { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: var(--radius-md); padding: 20px; }
 .chart-card h3 { margin: 0 0 16px; font-size: 16px; }
+.chart-wide { grid-column: span 2; }
 .chart { height: 300px; }
 .students h3 { margin: 0 0 12px; font-size: 16px; }
 </style>
