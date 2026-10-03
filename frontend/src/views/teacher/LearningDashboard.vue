@@ -45,24 +45,28 @@ watch(selectedId, loadReport)
 onMounted(loadAssignments)
 
 const pieOption = computed(() => ({
-  tooltip: { trigger: 'item' },
-  legend: { bottom: 0 },
+  tooltip: { trigger: 'item', backgroundColor: '#161B22', borderColor: '#30363D', textStyle: { color: '#E6EDF3' } },
+  legend: { bottom: 0, textStyle: { color: '#8B949E' } },
   series: [{
     type: 'pie',
     radius: ['40%', '70%'],
     data: report.value?.misconception_stats?.map((s) => ({ name: s.misconception_type, value: s.count })) || [],
-    color: ['#5B7FFF', '#E8A345', '#3DAA52', '#E85D5D'],
+    color: ['#5B7FFF', '#E8A345', '#3FB950', '#F85149', '#A371F7', '#39D0D8'],
+    itemStyle: { borderColor: '#0D1117', borderWidth: 2 },
+    label: { color: '#8B949E' },
   }],
 }))
 
 const barOption = computed(() => ({
-  tooltip: { trigger: 'axis' },
-  xAxis: { type: 'category', data: report.value?.knowledge_stats?.map((s) => s.knowledge_point) || [], axisLabel: { rotate: 30 } },
-  yAxis: { type: 'value' },
+  tooltip: { trigger: 'axis', backgroundColor: '#161B22', borderColor: '#30363D', textStyle: { color: '#E6EDF3' } },
+  xAxis: { type: 'category', data: report.value?.knowledge_stats?.map((s) => s.knowledge_point) || [], axisLabel: { rotate: 30, color: '#8B949E' }, axisLine: { lineStyle: { color: '#30363D' } } },
+  yAxis: { type: 'value', axisLabel: { color: '#8B949E' }, splitLine: { lineStyle: { color: 'rgba(48,54,61,0.4)' } } },
+  grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
   series: [{
     type: 'bar',
     data: report.value?.knowledge_stats?.map((s) => s.count) || [],
     itemStyle: { color: '#5B7FFF', borderRadius: [4, 4, 0, 0] },
+    barWidth: '50%',
   }],
 }))
 </script>
