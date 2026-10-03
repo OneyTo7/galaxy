@@ -24,10 +24,7 @@ async function loadCourses() {
 }
 
 async function handleGenerate() {
-  if (!prompt.value.trim()) {
-    ElMessage.warning('请先输入题目描述')
-    return
-  }
+  if (!prompt.value.trim()) { ElMessage.warning('请先输入题目描述'); return }
   loading.value = true
   result.value = null
   try {
@@ -44,20 +41,20 @@ onMounted(loadCourses)
 </script>
 
 <template>
-  <div class="gen-page">
-    <div class="header">
+  <div class="page">
+    <div class="page-header">
       <h1>AI 命题</h1>
-      <p class="desc">用一句话描述你要出的题，AI 自动生成题面、测试用例、评分细则和参考实现。</p>
+      <p class="page-desc">用一句话描述你要出的题，AI 自动生成题面、测试用例、评分细则和参考实现。</p>
     </div>
 
-    <div class="input-card">
+    <div class="card input-card">
       <el-input v-model="prompt" type="textarea" :rows="3" placeholder="描述你要出的题，如：出一道考察数组边界的入门题" />
       <div class="examples">
         <span class="examples-label">试试：</span>
         <el-tag v-for="ex in examples" :key="ex" size="small" class="example-tag" @click="prompt = ex">{{ ex }}</el-tag>
       </div>
       <div class="action-bar">
-        <div class="course-input">
+        <div class="course-select">
           <span class="label">课程（选填）</span>
           <el-select v-model="courseId" placeholder="选择课程" clearable style="width: 200px">
             <el-option v-for="c in courses" :key="c.id" :label="`${c.name} (${c.code})`" :value="c.id" />
@@ -67,7 +64,7 @@ onMounted(loadCourses)
       </div>
     </div>
 
-    <div v-if="result" class="result-card">
+    <div v-if="result" class="card result-card">
       <div class="result-head">
         <h2>{{ result.title }}</h2>
         <div class="tags">
@@ -85,8 +82,8 @@ onMounted(loadCourses)
         <div v-for="tc in result.test_cases" :key="tc.id" class="tc-item">
           <span class="tc-icon">{{ tc.is_hidden ? '🔒' : '👁' }}</span>
           <span class="tc-name">{{ tc.name || '用例' }}</span>
-          <pre class="tc-io">输入: {{ tc.input }}</pre>
-          <pre class="tc-io">期望: {{ tc.expected_output }}</pre>
+          <pre>输入: {{ tc.input }}</pre>
+          <pre>期望: {{ tc.expected_output }}</pre>
         </div>
       </div>
       <div v-if="result.scoring_rubric" class="result-section">
@@ -98,7 +95,7 @@ onMounted(loadCourses)
         <pre class="ref-code">{{ result.reference_code }}</pre>
       </div>
       <div class="result-actions">
-        <el-button @click="router.push('/assignments')">去发布 →</el-button>
+        <el-button @click="router.push('/assignments')">去发布</el-button>
         <el-button text @click="result = null">重新生成</el-button>
       </div>
     </div>
@@ -106,44 +103,27 @@ onMounted(loadCourses)
 </template>
 
 <style scoped>
-.gen-page { max-width: 900px; }
-.header { margin-bottom: 32px; }
-.header h1 { font-family: 'Space Grotesk'; font-size: 28px; margin: 0 0 8px; }
-.desc { color: var(--galaxy-text-secondary); font-size: 15px; margin: 0; }
+.page { max-width: 100%; }
+.page-header { margin-bottom: var(--space-lg); }
+.page-desc { margin: 0; font-size: var(--fs-body); color: var(--text-secondary); }
 
-.input-card {
-  background: var(--galaxy-card);
-  border: 1px solid var(--galaxy-border);
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 32px;
-}
-.examples { display: flex; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-.examples-label { font-size: 13px; color: var(--galaxy-text-secondary); }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-lg); }
+
+.examples { display: flex; align-items: center; gap: var(--space-xs); margin-top: var(--space-sm); flex-wrap: wrap; }
+.examples-label { font-size: var(--fs-caption); color: var(--text-secondary); }
 .example-tag { cursor: pointer; }
-.action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
-.course-input { display: flex; align-items: center; gap: 8px; }
-.label { font-size: 14px; color: var(--galaxy-text-secondary); }
+.action-bar { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-sm); }
+.course-select { display: flex; align-items: center; gap: var(--space-xs); }
+.label { font-size: var(--fs-body); color: var(--text-secondary); }
 
-.result-card {
-  background: var(--galaxy-card);
-  border: 1px solid var(--galaxy-border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.result-head {
-  padding: 24px;
-  border-bottom: 1px solid var(--galaxy-border);
-}
-.result-head h2 { margin: 0 0 12px; font-size: 22px; }
-.tags { display: flex; gap: 8px; }
-.result-section { padding: 20px 24px; border-bottom: 1px solid var(--galaxy-border); }
-.result-section h3 { font-size: 15px; margin: 0 0 12px; }
-.desc-text { color: var(--galaxy-text-secondary); white-space: pre-wrap; line-height: 1.7; font-size: 14px; }
-.tc-item { background: var(--galaxy-bg); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
-.tc-icon { margin-right: 8px; }
-.tc-name { font-weight: 500; font-size: 14px; }
-.tc-io { margin: 6px 0 0; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--galaxy-text-secondary); }
-.ref-code { background: var(--galaxy-bg); border-radius: 6px; padding: 12px; font-family: 'JetBrains Mono'; font-size: 13px; overflow-x: auto; }
-.result-actions { padding: 20px 24px; display: flex; gap: 12px; }
+.result-head { padding-bottom: var(--space-sm); border-bottom: 1px solid var(--border); margin-bottom: var(--space-md); }
+.tags { display: flex; gap: var(--space-xs); margin-top: var(--space-xs); }
+.result-section { margin-bottom: var(--space-md); }
+.desc-text { color: var(--text-secondary); white-space: pre-wrap; line-height: 1.6; font-size: var(--fs-body); }
+.tc-item { background: var(--bg-page); border-radius: var(--radius-md); padding: var(--space-sm); margin-bottom: var(--space-xs); }
+.tc-icon { margin-right: var(--space-xs); }
+.tc-name { font-weight: 500; font-size: var(--fs-body); }
+.tc-item pre { margin: var(--space-xs) 0 0; font-size: var(--fs-code); color: var(--text-secondary); }
+.ref-code { background: var(--bg-page); border-radius: var(--radius-md); padding: var(--space-sm); font-size: var(--fs-code); overflow-x: auto; }
+.result-actions { display: flex; gap: var(--space-xs); }
 </style>

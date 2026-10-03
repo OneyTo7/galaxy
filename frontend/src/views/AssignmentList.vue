@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listAssignments, listPublished, publishAssignment, deleteAssignment } from '@/api/assignment'
@@ -19,11 +19,8 @@ async function load() {
     } else {
       assignments.value = await listPublished()
     }
-  } catch (e) {
-    console.error('加载作业失败', e)
-  } finally {
-    loading.value = false
-  }
+  } catch (e) { console.error('加载作业失败', e) }
+  finally { loading.value = false }
 }
 
 async function handlePublish(id: number) {
@@ -61,19 +58,23 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="assignment-list">
-    <div class="header">
-      <h1>{{ auth.role === 'teacher' ? '我的作业' : '可提交的作业' }}</h1>
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1>{{ auth.role === 'teacher' ? '我的作业' : '可提交的作业' }}</h1>
+        <p class="page-desc" v-if="auth.role === 'teacher'">AI 生成的作业默认为草稿，点击「发布」后学生可见。</p>
+        <p class="page-desc" v-else>点击「去做」进入代码编辑器提交作业。</p>
+      </div>
       <el-button v-if="auth.role === 'teacher'" type="primary" @click="router.push('/assignment-generate')">AI 命题</el-button>
     </div>
-    <p class="desc" v-if="auth.role === 'teacher'">AI 生成的作业默认为草稿，点击「发布」后学生可见。</p>
-    <p class="desc" v-else>点击「去做」进入代码编辑器提交作业。</p>
-    <div v-if="!loading && assignments.length === 0" class="empty">
-      <p>暂无作业</p>
+
+    <div v-if="!loading && assignments.length === 0" class="empty-state">
+      <p class="empty-text">暂无作业</p>
     </div>
-    <div class="cards">
-      <div v-for="a in assignments" :key="a.id" class="card">
-        <div class="card-header">
+
+    <div class="cards-grid">
+      <div v-for="a in assignments" :key="a.id" class="assign-card">
+        <div class="card-head">
           <h3>{{ a.title }}</h3>
           <el-tag v-if="auth.role === 'teacher'" :type="a.status === 'published' ? 'success' : 'info'" size="small">
             {{ a.status === 'published' ? '已发布' : '草稿' }}
@@ -81,7 +82,7 @@ onMounted(load)
         </div>
         <p class="card-desc">{{ a.description.substring(0, 120) }}{{ a.description.length > 120 ? '...' : '' }}</p>
         <div class="card-meta">
-          <span>语言 {{ a.lang }}</span>
+          <span>{{ a.lang }}</span>
           <span>{{ a.test_cases?.length || 0 }} 个用例</span>
         </div>
         <div class="card-actions">
@@ -96,11 +97,8 @@ onMounted(load)
     <el-dialog v-model="detailVisible" :title="detailAssignment?.title" width="700px" top="5vh">
       <div v-if="detailAssignment" class="detail-content">
         <div class="detail-meta">
-          <el-tag size="small">语言 {{ detailAssignment.lang }}</el-tag>
+          <el-tag size="small">{{ detailAssignment.lang }}</el-tag>
           <el-tag size="small" type="info">{{ detailAssignment.test_cases?.length || 0 }} 个用例</el-tag>
-          <el-tag v-if="auth.role === 'teacher'" size="small" :type="detailAssignment.status === 'published' ? 'success' : 'warning'">
-            {{ detailAssignment.status === 'published' ? '已发布' : '草稿' }}
-          </el-tag>
         </div>
         <div class="detail-section">
           <h4>题目描述</h4>
@@ -133,26 +131,30 @@ onMounted(load)
 </template>
 
 <style scoped>
-.assignment-list { max-width: 1000px; }
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.desc { color: var(--galaxy-text-secondary); margin-bottom: 24px; }
-.empty { text-align: center; padding: 60px 0; color: var(--galaxy-text-secondary); }
-.cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.card { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: 8px; padding: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.card-header h3 { margin: 0; font-size: 16px; }
-.card-desc { color: var(--galaxy-text-secondary); font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
-.card-meta { display: flex; gap: 16px; font-size: 13px; color: var(--galaxy-text-secondary); margin-bottom: 16px; }
-.card-actions { display: flex; gap: 8px; }
+.page { max-width: 100%; }
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-lg); }
+.page-desc { margin: 0; font-size: var(--fs-body); color: var(--text-secondary); }
 
-.detail-content { max-height: 70vh; overflow-y: auto; }
-.detail-meta { display: flex; gap: 8px; margin-bottom: 20px; }
-.detail-section { margin-bottom: 24px; }
-.detail-section h4 { font-size: 15px; margin: 0 0 10px; }
-.detail-text { color: var(--galaxy-text-secondary); white-space: pre-wrap; line-height: 1.7; font-size: 14px; }
-.detail-case { background: var(--galaxy-bg); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }
-.case-tag { font-size: 12px; color: var(--galaxy-text-secondary); margin-right: 8px; }
-.case-name { font-weight: 500; font-size: 14px; }
-.detail-case pre { margin: 6px 0 0; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--galaxy-text-secondary); }
-.ref-code { background: var(--galaxy-bg); border-radius: 6px; padding: 12px; font-family: 'JetBrains Mono'; font-size: 13px; overflow-x: auto; }
+.empty-state { text-align: center; padding: var(--space-xl) 0; color: var(--text-secondary); }
+
+.cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
+.assign-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); transition: all var(--duration) var(--ease); }
+.assign-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs); }
+.card-head h3 { margin: 0; font-size: var(--fs-h3); }
+.card-desc { color: var(--text-secondary); font-size: var(--fs-body); line-height: 1.6; margin: 0 0 var(--space-sm); }
+.card-meta { display: flex; gap: var(--space-md); font-size: var(--fs-caption); color: var(--text-placeholder); margin-bottom: var(--space-sm); }
+.card-actions { display: flex; gap: var(--space-xs); }
+
+.detail-meta { display: flex; gap: var(--space-xs); margin-bottom: var(--space-md); }
+.detail-section { margin-bottom: var(--space-md); }
+.detail-section h4 { font-size: var(--fs-h3); font-weight: 500; margin: 0 0 var(--space-xs); }
+.detail-text { color: var(--text-secondary); white-space: pre-wrap; line-height: 1.6; font-size: var(--fs-body); }
+.detail-case { background: var(--bg-page); border-radius: var(--radius-md); padding: var(--space-sm); margin-bottom: var(--space-xs); }
+.case-tag { font-size: var(--fs-caption); color: var(--text-secondary); margin-right: var(--space-xs); }
+.case-name { font-weight: 500; font-size: var(--fs-body); }
+.detail-case pre { margin: var(--space-xs) 0 0; font-size: var(--fs-code); color: var(--text-secondary); }
+.ref-code { background: var(--bg-page); border-radius: var(--radius-md); padding: var(--space-sm); font-size: var(--fs-code); overflow-x: auto; }
+
+@media (max-width: 768px) { .cards-grid { grid-template-columns: 1fr; } }
 </style>
