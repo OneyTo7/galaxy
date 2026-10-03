@@ -1,13 +1,13 @@
 :root {
-  --galaxy-bg: #0F1923;
-  --galaxy-card: #162028;
-  --galaxy-card-hover: #1A2632;
-  --galaxy-card-pop: #1A2632;
+  --galaxy-bg: #1A2030;
+  --galaxy-card: #242B3D;
+  --galaxy-card-hover: #2A3144;
+  --galaxy-card-pop: #2E3548;
   --galaxy-text: #E2E8F0;
   --galaxy-text-secondary: #94A3B8;
   --galaxy-text-tertiary: #64748B;
-  --galaxy-border: #2A3641;
-  --galaxy-border-soft: rgba(42, 54, 65, 0.5);
+  --galaxy-border: #364056;
+  --galaxy-border-soft: rgba(54, 64, 86, 0.5);
   --galaxy-accent: #5B7FFF;
   --galaxy-accent-hover: #4A6FEF;
   --galaxy-accent-soft: rgba(91, 127, 255, 0.12);
@@ -55,8 +55,8 @@ body {
   min-height: 100vh;
   background: var(--galaxy-bg);
   background-image:
-    radial-gradient(circle 600px at 8% 0%, rgba(91, 127, 255, 0.08) 0%, transparent 60%),
-    radial-gradient(circle 500px at 92% 100%, rgba(163, 113, 247, 0.06) 0%, transparent 60%);
+    radial-gradient(circle 700px at 8% 0%, rgba(91, 127, 255, 0.1) 0%, transparent 60%),
+    radial-gradient(circle 600px at 92% 100%, rgba(163, 113, 247, 0.08) 0%, transparent 60%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
 }

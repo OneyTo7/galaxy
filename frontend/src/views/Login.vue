@@ -132,7 +132,7 @@ async function handleSubmit() {
 /* 左侧品牌区 */
 .login-left {
   position: relative;
-  background: linear-gradient(160deg, #0F1923 0%, #162028 40%, #0D1117 100%);
+  background: linear-gradient(160deg, #1A2030 0%, #242B3D 40%, #161A28 100%);
   display: flex;
   align-items: center;
   overflow: hidden;
