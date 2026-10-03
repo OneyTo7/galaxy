@@ -22,6 +22,8 @@ const router = createRouter({
         { path: 'appeal', name: 'appeal', component: () => import('@/views/Appeal.vue') },
         { path: 'cheating', name: 'cheating', component: () => import('@/views/CheatingReport.vue') },
         { path: 'gradebook', name: 'gradebook', component: () => import('@/views/Gradebook.vue') },
+        { path: 'assignment-detail', name: 'assignment-detail', component: () => import('@/views/teacher/AssignmentDetail.vue') },
+        { path: 'code-review', name: 'code-review', component: () => import('@/views/teacher/CodeReview.vue') },
         { path: 'admin', name: 'admin', component: () => import('@/views/admin/Courses.vue') }
       ]
     }
