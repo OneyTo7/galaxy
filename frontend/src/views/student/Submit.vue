@@ -1,21 +1,26 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { submit, getEvaluation } from '@/api/submission'
+import { diagnose } from '@/api/diagnose'
 import { getAssignment } from '@/api/assignment'
+import { Loading } from '@element-plus/icons-vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import { ElMessage } from 'element-plus'
-import type { EvaluationOut, AssignmentOut } from '@/types/api'
+import type { EvaluationOut, AssignmentOut, DiagnoseOut } from '@/types/api'
 
 const POLL_INTERVAL = 2000
 const MAX_POLL_COUNT = 30
 
 const route = useRoute()
+const router = useRouter()
 const assignmentId = Number(route.query.assignment) || 0
 const assignment = ref<AssignmentOut | null>(null)
 const form = reactive({ assignment_id: assignmentId, code: '# 在这里写代码\nprint("hello world")', lang: 'python' })
 const submissionId = ref<number | null>(null)
 const evaluation = ref<EvaluationOut | null>(null)
+const diagnosis = ref<DiagnoseOut | null>(null)
+const diagnosing = ref(false)
 const loading = ref(false)
 let pollTimer: number | null = null
 let pollCount = 0
@@ -64,6 +69,7 @@ function startPolling() {
       if (res.status === 'done') {
         if (pollTimer) clearInterval(pollTimer)
         pollTimer = null
+        autoDiagnose()
       }
     } catch (e) {
       console.error('评测查询失败', e)
@@ -74,6 +80,19 @@ function startPolling() {
 onBeforeUnmount(() => {
   if (pollTimer) clearInterval(pollTimer)
 })
+
+async function autoDiagnose() {
+  if (!submissionId.value) return
+  diagnosing.value = true
+  diagnosis.value = null
+  try {
+    diagnosis.value = await diagnose(submissionId.value)
+  } catch (e: any) {
+    console.error('自动诊断失败', e)
+  } finally {
+    diagnosing.value = false
+  }
+}
 </script>
 
 <template>
@@ -121,6 +140,39 @@ onBeforeUnmount(() => {
           <span>用例 {{ r.case_id }}</span>
           <span v-if="r.stderr" class="case-err">{{ r.stderr }}</span>
           <span v-if="r.timed_out" class="case-err">超时</span>
+        </div>
+      </div>
+
+      <!-- 自动诊断结果 -->
+      <div v-if="diagnosing" class="diagnose-loading">
+        <el-icon class="is-loading"><Loading /></el-icon>
+        <span>AI 正在诊断你的代码误区...</span>
+      </div>
+
+      <div v-if="diagnosis" class="diagnosis-card">
+        <div class="diag-head">
+          <span class="diag-badge">AI 误区诊断</span>
+          <span class="diag-confidence">{{ (diagnosis.confidence * 100).toFixed(0) }}%</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row">
+            <span class="diag-label">误区类型</span>
+            <span class="diag-value accent">{{ diagnosis.misconception_type }}</span>
+          </div>
+          <div class="diag-row">
+            <span class="diag-label">证据</span>
+            <p class="diag-text">{{ diagnosis.evidence }}</p>
+          </div>
+          <div class="diag-row">
+            <span class="diag-label">知识点</span>
+            <span class="diag-value">{{ diagnosis.knowledge_point }}</span>
+          </div>
+        </div>
+        <div class="diag-actions">
+          <el-button type="primary" size="small" @click="router.push(`/variant?submission=${submissionId}`)">
+            去做变式练习
+          </el-button>
+          <el-button text size="small" @click="router.push('/my-submissions')">查看我的提交</el-button>
         </div>
       </div>
     </main>
@@ -249,6 +301,60 @@ onBeforeUnmount(() => {
   font-family: 'JetBrains Mono';
   font-size: 12px;
 }
+
+/* 诊断加载 */
+.diagnose-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: var(--galaxy-text-secondary);
+  font-size: 14px;
+}
+
+/* AI 诊断卡片 */
+.diagnosis-card {
+  background: linear-gradient(135deg, rgba(91, 127, 255, 0.06), rgba(91, 127, 255, 0.01));
+  border: 1px solid var(--galaxy-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.diag-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--galaxy-border);
+}
+.diag-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--galaxy-accent);
+  background: var(--galaxy-accent-soft);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.diag-confidence {
+  font-family: 'Space Grotesk';
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--galaxy-text-secondary);
+}
+.diag-body { padding: 16px 20px; }
+.diag-row { margin-bottom: 12px; }
+.diag-row:last-child { margin-bottom: 0; }
+.diag-label {
+  display: block;
+  font-size: 12px;
+  color: var(--galaxy-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.diag-value { font-size: 15px; font-weight: 600; }
+.diag-value.accent { color: var(--galaxy-accent); font-size: 17px; }
+.diag-text { font-size: 14px; line-height: 1.6; margin: 0; color: var(--galaxy-text); }
+.diag-actions { padding: 12px 20px; display: flex; gap: 8px; }
 
 /* 响应式：窄屏改上下布局 */
 @media (max-width: 900px) {
