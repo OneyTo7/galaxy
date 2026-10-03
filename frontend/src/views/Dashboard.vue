@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listMyCourses, listCourseAssignments, listCourseStudents } from '@/api/organization'
+import { listMySubmissions } from '@/api/submission'
 import { ElMessage } from 'element-plus'
 
 interface Course {
@@ -20,6 +21,13 @@ interface CourseAssign {
   lang: string
 }
 
+interface MySubmission {
+  id: number
+  assignment_id: number
+  status: string
+  score: number
+}
+
 const auth = useAuthStore()
 const router = useRouter()
 const courses = ref<Course[]>([])
@@ -27,6 +35,7 @@ const loading = ref(false)
 const selectedCourse = ref<Course | null>(null)
 const assignments = ref<CourseAssign[]>([])
 const students = ref<[number, string][]>([])
+const mySubmissions = ref<MySubmission[]>([])
 const detailLoading = ref(false)
 
 async function loadCourses() {
@@ -48,6 +57,7 @@ async function selectCourse(c: Course) {
   detailLoading.value = true
   assignments.value = []
   students.value = []
+  mySubmissions.value = []
   try {
     const [a, s] = await Promise.all([
       listCourseAssignments(c.id),
@@ -55,12 +65,32 @@ async function selectCourse(c: Course) {
     ])
     assignments.value = a
     students.value = s
+    if (auth.role === 'student') {
+      const allSubs = await listMySubmissions()
+      mySubmissions.value = allSubs as MySubmission[]
+    }
   } catch (e) {
     console.error('加载课程详情失败', e)
   } finally {
     detailLoading.value = false
   }
 }
+
+const publishedAssignments = computed(() => assignments.value.filter(a => a.status === 'published'))
+const completedCount = computed(() => {
+  return publishedAssignments.value.filter(a => mySubmissions.value.some(s => s.assignment_id === a.id && s.status === 'done')).length
+})
+const myAvgScore = computed(() => {
+  const done = mySubmissions.value.filter(s => s.status === 'done')
+  if (!done.length) return 0
+  return Math.round(done.reduce((sum, s) => sum + s.score, 0) / done.length)
+})
+const assignmentProgress = computed(() => {
+  return publishedAssignments.value.map(a => {
+    const sub = mySubmissions.value.find(s => s.assignment_id === a.id && s.status === 'done')
+    return { ...a, submitted: !!sub, score: sub?.score ?? null }
+  })
+})
 
 onMounted(loadCourses)
 </script>
@@ -108,16 +138,44 @@ onMounted(loadCourses)
               <span class="stat-num">{{ students.length }}</span>
               <span class="stat-label">学生</span>
             </div>
+            <div class="stat" v-if="auth.role === 'student'">
+              <span class="stat-num">{{ completedCount }}/{{ publishedAssignments.length }}</span>
+              <span class="stat-label">已完成</span>
+            </div>
+            <div class="stat" v-if="auth.role === 'student' && mySubmissions.length">
+              <span class="stat-num">{{ myAvgScore }}</span>
+              <span class="stat-label">平均分</span>
+            </div>
             <div class="stat">
-              <span class="stat-num">{{ assignments.filter(a => a.status === 'published').length }}</span>
+              <span class="stat-num">{{ publishedAssignments.length }}</span>
               <span class="stat-label">已发布</span>
             </div>
           </div>
 
-          <div class="section">
+          <!-- 学生：作业进度列表 -->
+          <div v-if="auth.role === 'student'" class="section">
+            <h3>作业进度</h3>
+            <div v-if="assignmentProgress.length === 0" class="section-empty">暂无已发布作业</div>
+            <div v-for="a in assignmentProgress" :key="a.id" class="assignment-row">
+              <div class="assign-info">
+                <span class="assign-title">{{ a.title }}</span>
+                <el-tag v-if="a.submitted" type="success" size="small">{{ a.score }}分</el-tag>
+                <el-tag v-else type="warning" size="small">未提交</el-tag>
+                <span class="assign-lang">{{ a.lang }}</span>
+              </div>
+              <el-button v-if="!a.submitted" size="small" type="primary" @click="router.push(`/submit?assignment=${a.id}`)">去做</el-button>
+              <el-button v-else size="small" @click="router.push('/my-submissions')">查看</el-button>
+            </div>
+          </div>
+
+          <!-- 教师：学情概览入口 -->
+          <div v-if="auth.role === 'teacher' && assignments.length" class="section">
             <div class="section-header">
               <h3>课程作业</h3>
-              <el-button v-if="auth.role === 'teacher'" size="small" @click="router.push('/assignment-generate')">AI命题</el-button>
+              <div class="section-actions">
+                <el-button size="small" @click="router.push(`/learning-report`)">学情看板</el-button>
+                <el-button size="small" @click="router.push('/assignment-generate')">AI命题</el-button>
+              </div>
             </div>
             <div v-if="assignments.length === 0" class="section-empty">暂无作业</div>
             <div v-for="a in assignments" :key="a.id" class="assignment-row">
@@ -181,6 +239,7 @@ onMounted(loadCourses)
 .section { margin-bottom: 32px; }
 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .section-header h3 { font-size: 16px; margin: 0; }
+.section-actions { display: flex; gap: 8px; }
 .section-empty { color: var(--galaxy-text-secondary); font-size: 14px; padding: 16px 0; }
 .assignment-row {
   display: flex; justify-content: space-between; align-items: center;
