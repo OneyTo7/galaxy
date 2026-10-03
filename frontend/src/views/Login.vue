@@ -132,7 +132,7 @@ async function handleSubmit() {
 /* 左侧品牌区 */
 .login-left {
   position: relative;
-  background: linear-gradient(160deg, #1B2838 0%, #1E2F48 40%, #15202E 100%);
+  background: linear-gradient(160deg, #0F1923 0%, #162028 40%, #0D1117 100%);
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -142,8 +142,8 @@ async function handleSubmit() {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(91, 127, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(91, 127, 255, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(91, 127, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 127, 255, 0.05) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%);
   -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%);
@@ -155,7 +155,7 @@ async function handleSubmit() {
   height: 600px;
   top: -200px;
   left: -100px;
-  background: radial-gradient(circle, rgba(91, 127, 255, 0.18) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(91, 127, 255, 0.15) 0%, transparent 60%);
   border-radius: 50%;
 }
 
@@ -165,7 +165,7 @@ async function handleSubmit() {
   height: 500px;
   bottom: -150px;
   right: -100px;
-  background: radial-gradient(circle, rgba(232, 163, 69, 0.12) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(163, 113, 247, 0.1) 0%, transparent 60%);
   border-radius: 50%;
 }
 
