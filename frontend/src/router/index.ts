@@ -24,6 +24,7 @@ const router = createRouter({
         { path: 'gradebook', name: 'gradebook', component: () => import('@/views/Gradebook.vue') },
         { path: 'assignment-detail', name: 'assignment-detail', component: () => import('@/views/teacher/AssignmentDetail.vue') },
         { path: 'code-review', name: 'code-review', component: () => import('@/views/teacher/CodeReview.vue') },
+        { path: 'student-report', name: 'student-report', component: () => import('@/views/teacher/StudentReport.vue') },
         { path: 'admin', name: 'admin', component: () => import('@/views/admin/Courses.vue') }
       ]
     }
