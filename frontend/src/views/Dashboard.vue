@@ -72,61 +72,61 @@ onMounted(loadCourses)
 </script>
 
 <template>
-  <div class="courses-page">
-    <div class="header">
-      <h1>我的课程</h1>
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1>我的课程</h1>
+        <p class="page-desc">{{ auth.role === 'teacher' ? '管理你的课程、作业与班级学情。' : '查看你选的课程，做作业、看诊断、查成绩。' }}</p>
+      </div>
       <el-button v-if="auth.role === 'teacher'" type="primary" @click="router.push('/admin')">创建课程</el-button>
     </div>
-    <p class="desc">{{ auth.role === 'teacher' ? '管理你的课程、作业与班级学情。' : '查看你选的课程，做作业、看诊断、查成绩。' }}</p>
 
-    <div v-if="!loading && courses.length === 0" class="empty">
+    <div v-if="!loading && courses.length === 0" class="empty-state">
       <p class="empty-text">{{ auth.role === 'teacher' ? '暂无课程，去创建一门吧' : '暂未选课' }}</p>
       <el-button v-if="auth.role === 'teacher'" type="primary" @click="router.push('/admin')">创建课程</el-button>
     </div>
 
-    <div v-else class="layout">
-      <aside class="course-list">
-        <div v-for="c in courses" :key="c.id" class="course-item" :class="{ active: selectedCourse?.id === c.id }" @click="selectCourse(c)">
+    <div v-else class="split-layout">
+      <aside class="sidebar">
+        <div v-for="c in courses" :key="c.id" class="sidebar-item" :class="{ active: selectedCourse?.id === c.id }" @click="selectCourse(c)">
           <h4>{{ c.name }}</h4>
-          <span class="course-code">{{ c.code }}</span>
+          <span class="code">{{ c.code }}</span>
         </div>
       </aside>
 
-      <main class="course-detail" v-loading="detailLoading">
+      <main class="main-content" v-loading="detailLoading">
         <template v-if="selectedCourse">
           <div class="detail-header">
             <h2>{{ selectedCourse.name }}</h2>
-            <span class="course-code-tag">{{ selectedCourse.code }}</span>
+            <span class="code-tag">{{ selectedCourse.code }}</span>
           </div>
 
-          <!-- 统计卡片：左色条 + 大数据数字 -->
-          <div class="stats-grid">
-            <div class="stat-card" style="--bar-color: var(--galaxy-accent)">
+          <div class="stat-row">
+            <div class="stat-card">
               <span class="stat-num">{{ assignments.length }}</span>
               <span class="stat-label">作业总数</span>
             </div>
-            <div v-if="auth.role === 'teacher'" class="stat-card" style="--bar-color: var(--galaxy-cyan)">
+            <div v-if="auth.role === 'teacher'" class="stat-card">
               <span class="stat-num">{{ students.length }}</span>
               <span class="stat-label">选课学生</span>
             </div>
-            <div v-if="auth.role === 'student'" class="stat-card" style="--bar-color: var(--galaxy-cyan)">
-              <span class="stat-num">{{ completedCount }}<span class="stat-sub">/{{ publishedAssignments.length }}</span></span>
+            <div v-if="auth.role === 'student'" class="stat-card">
+              <span class="stat-num">{{ completedCount }}<span class="sub">/{{ publishedAssignments.length }}</span></span>
               <span class="stat-label">已完成</span>
             </div>
-            <div v-if="auth.role === 'student' && mySubmissions.length" class="stat-card" style="--bar-color: var(--galaxy-purple)">
+            <div v-if="auth.role === 'student' && mySubmissions.length" class="stat-card">
               <span class="stat-num">{{ myAvgScore }}</span>
               <span class="stat-label">平均分</span>
             </div>
-            <div class="stat-card" style="--bar-color: var(--galaxy-success)">
+            <div class="stat-card">
               <span class="stat-num">{{ publishedAssignments.length }}</span>
               <span class="stat-label">已发布</span>
             </div>
           </div>
 
-          <!-- 学生：进度条 -->
-          <div v-if="auth.role === 'student' && publishedAssignments.length" class="progress-section">
-            <div class="progress-header">
-              <span>完成进度</span>
+          <div v-if="auth.role === 'student' && publishedAssignments.length" class="section">
+            <div class="progress-bar-wrap">
+              <span class="progress-label">完成进度</span>
               <span class="progress-num">{{ progressPercent }}%</span>
             </div>
             <div class="progress-track">
@@ -134,40 +134,25 @@ onMounted(loadCourses)
             </div>
           </div>
 
-          <!-- 学生：作业进度列表 -->
-          <div v-if="auth.role === 'student'" class="section">
-            <h3>作业进度</h3>
-            <div v-if="assignmentProgress.length === 0" class="section-empty">暂无已发布作业</div>
-            <div v-for="a in assignmentProgress" :key="a.id" class="assignment-row">
-              <div class="assign-info">
-                <span class="assign-title">{{ a.title }}</span>
-                <el-tag v-if="a.submitted" type="success" size="small">{{ a.score }}分</el-tag>
-                <el-tag v-else type="warning" size="small">未提交</el-tag>
-              </div>
-              <el-button v-if="!a.submitted" size="small" type="primary" @click="router.push(`/submit?assignment=${a.id}`)">去做</el-button>
-              <el-button v-else size="small" @click="router.push('/my-submissions')">查看</el-button>
-            </div>
-          </div>
-
-          <!-- 教师：作业管理 + 学情入口 -->
-          <div v-if="auth.role === 'teacher' && assignments.length" class="section">
+          <div class="section">
             <div class="section-header">
-              <h3>课程作业</h3>
-              <div class="section-actions">
-                <el-button size="small" @click="router.push('/learning-report')">学情看板</el-button>
-                <el-button size="small" type="primary" @click="router.push('/assignment-generate')">AI命题</el-button>
-              </div>
+              <h3>{{ auth.role === 'student' ? '作业进度' : '课程作业' }}</h3>
+              <el-button v-if="auth.role === 'teacher'" size="small" type="primary" @click="router.push('/assignment-generate')">AI命题</el-button>
             </div>
-            <div v-if="assignments.length === 0" class="section-empty">暂无作业</div>
-            <div v-for="a in assignments" :key="a.id" class="assignment-row">
+            <div v-if="assignmentProgress.length === 0 && auth.role === 'student'" class="empty-inline">暂无已发布作业</div>
+            <div v-if="assignments.length === 0 && auth.role === 'teacher'" class="empty-inline">暂无作业</div>
+            <div v-for="a in (auth.role === 'student' ? assignmentProgress : assignments)" :key="a.id" class="assign-row">
               <div class="assign-info">
                 <span class="assign-title">{{ a.title }}</span>
-                <el-tag :type="a.status === 'published' ? 'success' : 'info'" size="small">{{ a.status === 'published' ? '已发布' : '草稿' }}</el-tag>
+                <el-tag v-if="auth.role === 'student' && a.submitted" type="success" size="small">{{ a.score }}分</el-tag>
+                <el-tag v-else-if="auth.role === 'student'" type="warning" size="small">未提交</el-tag>
+                <el-tag v-else :type="a.status === 'published' ? 'success' : 'info'" size="small">{{ a.status === 'published' ? '已发布' : '草稿' }}</el-tag>
               </div>
+              <el-button v-if="auth.role === 'student' && !a.submitted" size="small" type="primary" @click="router.push(`/submit?assignment=${a.id}`)">去做</el-button>
+              <el-button v-if="auth.role === 'student' && a.submitted" size="small" @click="router.push('/my-submissions')">查看</el-button>
             </div>
           </div>
 
-          <!-- 教师：选课学生 -->
           <div v-if="auth.role === 'teacher' && students.length" class="section">
             <h3>选课学生</h3>
             <el-table :data="students.map(([id, cls]) => ({ student_id: id, class_name: cls }))" border size="small">
@@ -182,56 +167,47 @@ onMounted(loadCourses)
 </template>
 
 <style scoped>
-.courses-page { max-width: 1100px; }
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.desc { color: var(--galaxy-text-secondary); font-size: var(--fs-caption); margin: 0 0 24px; }
-.empty { text-align: center; padding: 60px 0; }
-.empty-text { color: var(--galaxy-text-secondary); margin-bottom: 16px; }
+.page { max-width: 100%; }
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-lg); }
+.page-desc { margin: 0; font-size: var(--fs-body); color: var(--text-secondary); }
 
-.layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; }
-.course-list { display: flex; flex-direction: column; gap: 8px; }
-.course-item { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: var(--radius-md); padding: 14px 16px; cursor: pointer; transition: all 0.15s; }
-.course-item:hover { border-color: var(--galaxy-accent); background: var(--galaxy-card-hover); }
-.course-item.active { border-color: var(--galaxy-accent); background: var(--galaxy-accent-soft); }
-.course-item h4 { margin: 0 0 4px; font-size: 14px; color: var(--galaxy-text); }
-.course-code { font-size: 12px; color: var(--galaxy-text-tertiary); font-family: 'JetBrains Mono'; }
+.empty-state { text-align: center; padding: var(--space-xl) 0; }
+.empty-text { color: var(--text-secondary); margin-bottom: var(--space-md); }
 
-.course-detail { background: var(--galaxy-card); border: 1px solid var(--galaxy-border); border-radius: var(--radius-lg); padding: 24px; min-height: 400px; }
-.detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-.course-code-tag { font-size: 12px; color: var(--galaxy-text-tertiary); background: var(--galaxy-bg); padding: 4px 10px; border-radius: 4px; font-family: 'JetBrains Mono'; }
+.split-layout { display: grid; grid-template-columns: 260px 1fr; gap: var(--space-lg); }
 
-/* 统计卡片：左色条 + 大数据 */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.stat-card {
-  background: var(--galaxy-bg);
-  border: 1px solid var(--galaxy-border);
-  border-left: 3px solid var(--bar-color, var(--galaxy-accent));
-  border-radius: var(--radius-sm);
-  padding: 16px 20px;
-  transition: all 0.15s;
-}
-.stat-card:hover { border-color: var(--galaxy-border); border-left-color: var(--bar-color); box-shadow: var(--shadow-md); transform: translateY(-1px); }
-.stat-num { font-family: 'Space Grotesk'; font-size: var(--fs-data); font-weight: 700; color: var(--galaxy-text); display: block; line-height: 1.1; }
-.stat-sub { font-size: 20px; color: var(--galaxy-text-tertiary); font-weight: 500; }
-.stat-label { font-size: var(--fs-small); color: var(--galaxy-text-tertiary); margin-top: 4px; display: block; }
+.sidebar { display: flex; flex-direction: column; gap: var(--space-xs); }
+.sidebar-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); cursor: pointer; transition: all var(--duration) var(--ease); }
+.sidebar-item:hover { border-color: var(--primary); box-shadow: var(--shadow-card); }
+.sidebar-item.active { border-color: var(--primary); background: var(--bg-hover); }
+.sidebar-item h4 { margin: 0 0 4px; font-size: var(--fs-body); }
+.code { font-size: var(--fs-caption); color: var(--text-placeholder); font-family: 'JetBrains Mono'; }
 
-/* 进度条 */
-.progress-section { margin-bottom: 24px; }
-.progress-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: var(--fs-caption); color: var(--galaxy-text-secondary); }
-.progress-num { font-family: 'Space Grotesk'; font-weight: 700; color: var(--galaxy-accent); }
-.progress-track { height: 8px; background: var(--galaxy-bg); border-radius: 4px; overflow: hidden; }
-.progress-fill { height: 100%; background: linear-gradient(90deg, var(--galaxy-accent), var(--galaxy-cyan)); border-radius: 4px; transition: width 0.5s; box-shadow: 0 0 8px rgba(91, 127, 255, 0.3); }
+.main-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); min-height: 400px; }
+.detail-header { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-lg); }
+.code-tag { font-size: var(--fs-caption); color: var(--text-secondary); background: var(--bg-hover); padding: 3px 10px; border-radius: var(--radius-sm); font-family: 'JetBrains Mono'; }
 
-.section { margin-bottom: 24px; }
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.section-actions { display: flex; gap: 8px; }
-.section-empty { color: var(--galaxy-text-tertiary); font-size: 14px; padding: 16px 0; }
-.assignment-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--galaxy-border-soft); }
-.assign-info { display: flex; align-items: center; gap: 8px; }
-.assign-title { font-size: 14px; color: var(--galaxy-text); }
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-lg); }
+.stat-card { background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); }
+.stat-num { font-size: var(--fs-data); font-weight: 700; color: var(--text-primary); display: block; line-height: 1.1; }
+.sub { font-size: var(--fs-h2); color: var(--text-placeholder); font-weight: 400; }
+.stat-label { font-size: var(--fs-caption); color: var(--text-secondary); display: block; margin-top: 4px; }
+
+.section { margin-bottom: var(--space-lg); }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
+.empty-inline { color: var(--text-placeholder); font-size: var(--fs-body); padding: var(--space-md) 0; }
+
+.progress-bar-wrap { display: flex; justify-content: space-between; margin-bottom: var(--space-xs); font-size: var(--fs-caption); color: var(--text-secondary); }
+.progress-num { font-weight: 700; color: var(--primary); }
+.progress-track { height: 8px; background: var(--bg-page); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--info)); border-radius: 4px; transition: width 0.5s var(--ease); }
+
+.assign-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-xs) 0; border-bottom: 1px solid var(--border); }
+.assign-info { display: flex; align-items: center; gap: var(--space-xs); }
+.assign-title { font-size: var(--fs-body); color: var(--text-primary); }
 
 @media (max-width: 768px) {
-  .layout { grid-template-columns: 1fr; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .split-layout { grid-template-columns: 1fr; }
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
