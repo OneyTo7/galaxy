@@ -25,6 +25,13 @@ const loading = ref(false)
 let pollTimer: number | null = null
 let pollCount = 0
 
+const langOptions = [
+  { label: 'Python', value: 'python' },
+  { label: 'C', value: 'c' },
+  { label: 'C++', value: 'cpp' },
+  { label: 'Java', value: 'java' },
+]
+
 onMounted(async () => {
   if (assignmentId) {
     try {
@@ -105,7 +112,7 @@ async function autoDiagnose() {
     <aside class="problem-panel">
       <h1>{{ assignment.title }}</h1>
       <div class="meta">
-        <el-tag size="small">语言 {{ assignment.lang }}</el-tag>
+        <el-tag size="small">要求语言 {{ assignment.lang }}</el-tag>
         <el-tag size="small" type="info">{{ assignment.test_cases?.length || 0 }} 个用例</el-tag>
       </div>
       <div class="section">
@@ -125,7 +132,12 @@ async function autoDiagnose() {
     <!-- 右侧：代码 + 评测 -->
     <main class="code-panel">
       <div class="code-header">
-        <h3>代码编辑</h3>
+        <div class="code-header-left">
+          <h3>代码编辑</h3>
+          <el-select v-model="form.lang" size="small" style="width: 120px">
+            <el-option v-for="opt in langOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </div>
         <el-button type="primary" :loading="loading" @click="handleSubmit">提交评测</el-button>
       </div>
       <CodeEditor v-model="form.code" :lang="form.lang" />
@@ -252,14 +264,15 @@ async function autoDiagnose() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--galaxy-card);
-  border: 1px solid var(--galaxy-border);
-  border-radius: 8px;
-  padding: 12px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
 }
+.code-header-left { display: flex; align-items: center; gap: var(--space-sm); }
 .code-header h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--fs-body);
 }
 .code-header :deep(.code-editor) {
   height: 500px;

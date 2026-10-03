@@ -55,10 +55,18 @@ def _run_subprocess(code: str, lang: str, test_cases: list) -> list[CaseResult]:
                     timeout=_TIMEOUT,
                 )
                 elapsed = int((time.monotonic() - start) * 1000)
-                passed = proc.stdout.strip() == tc.expected_output.strip()
-                results.append(
-                    CaseResult(tc.id, passed, proc.stdout, proc.stderr, False, elapsed)
-                )
+                expected = tc.expected_output.strip() if tc.expected_output else ""
+                actual = proc.stdout.strip()
+                if not expected:
+                    passed = False
+                    results.append(
+                        CaseResult(tc.id, False, actual, "expected_output is empty", False, elapsed)
+                    )
+                else:
+                    passed = actual == expected
+                    results.append(
+                        CaseResult(tc.id, passed, proc.stdout, proc.stderr, False, elapsed)
+                    )
             except subprocess.TimeoutExpired:
                 results.append(CaseResult(tc.id, False, "", "timeout", True, _TIMEOUT * 1000))
     return results

@@ -43,14 +43,22 @@ def run_docker(code: str, lang: str, test_cases: list) -> list[CaseResult]:
                     timed_out = True
                 finally:
                     container.remove(force=True)
-                passed = (not timed_out) and logs.strip() == tc.expected_output.strip()
-                results.append(
-                    CaseResult(
-                        tc.id, passed, logs,
-                        "" if not timed_out else "timeout",
-                        timed_out, _TIMEOUT * 1000,
+                expected = tc.expected_output.strip() if tc.expected_output else ""
+                actual = logs.strip()
+                if not expected:
+                    passed = False
+                    results.append(
+                        CaseResult(tc.id, False, actual, "expected_output is empty", False, _TIMEOUT * 1000)
                     )
-                )
+                else:
+                    passed = (not timed_out) and actual == expected
+                    results.append(
+                        CaseResult(
+                            tc.id, passed, logs,
+                            "" if not timed_out else "timeout",
+                            timed_out, _TIMEOUT * 1000,
+                        )
+                    )
             except Exception as e:
                 results.append(CaseResult(tc.id, False, "", str(e), False, 0))
     return results
