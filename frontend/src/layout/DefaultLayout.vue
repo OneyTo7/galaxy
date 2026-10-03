@@ -29,9 +29,16 @@ const navItems = computed(() => {
     { to: '/cheating', label: '反作弊' },
     { to: '/gradebook', label: '成绩册' },
   ]
+  if (auth.role === 'assistant') return [
+    { to: '/dashboard', label: '我的课程' },
+    { to: '/learning-report', label: '学情看板' },
+    { to: '/appeal', label: '申诉初审' },
+  ]
   if (auth.role === 'admin') return [
-    { to: '/dashboard', label: '首页' },
-    { to: '/admin', label: '管理' },
+    { to: '/dashboard', label: '全校学情' },
+    { to: '/admin', label: '用户管理' },
+    { to: '/gradebook', label: '课程审核' },
+    { to: '/audit', label: '审计日志' },
   ]
   return [{ to: '/dashboard', label: '首页' }]
 })
@@ -48,6 +55,7 @@ function logout() {
       <div class="topbar-inner">
         <div class="brand">
           <span class="logo">智学</span>
+          <span class="logo-sub">AI 认知诊断实验教学平台</span>
         </div>
         <nav class="nav">
           <router-link v-for="item in navItems" :key="item.to" :to="item.to" :class="{ active: route.path === item.to }">
@@ -73,10 +81,9 @@ function logout() {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(15, 25, 35, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--galaxy-border);
+  height: 60px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
 }
 
 .topbar-inner {
@@ -85,53 +92,48 @@ function logout() {
   justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
-  height: 56px;
+  padding: 0 var(--space-lg);
+  height: 100%;
 }
 
-.brand { flex-shrink: 0; }
-.logo {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--galaxy-accent);
-  letter-spacing: -0.03em;
-  text-shadow: 0 0 16px rgba(91, 127, 255, 0.3);
-}
+.brand { display: flex; align-items: baseline; gap: 8px; flex-shrink: 0; }
+.logo { font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: -0.02em; }
+.logo-sub { font-size: var(--fs-caption); color: var(--text-secondary); }
 
-.nav { display: flex; gap: 2px; flex: 1; justify-content: center; }
+.nav { display: flex; gap: 4px; flex: 1; justify-content: center; }
 .nav a {
   text-decoration: none;
-  color: var(--galaxy-text-secondary);
-  font-size: var(--fs-caption);
+  color: var(--text-secondary);
+  font-size: var(--fs-body);
   font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 20px;
-  transition: all 0.15s;
+  padding: 8px 16px;
+  border-bottom: 2px solid transparent;
+  transition: all var(--duration) var(--ease);
 }
-.nav a:hover { background: var(--galaxy-accent-soft); color: var(--galaxy-accent); }
-.nav a.active { background: var(--galaxy-accent); color: #fff; font-weight: 600; box-shadow: 0 0 12px rgba(91, 127, 255, 0.3); }
+.nav a:hover { color: var(--primary); }
+.nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
 
 .user-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .role-pill {
-  font-size: var(--fs-small);
-  color: var(--galaxy-accent);
-  background: var(--galaxy-accent-soft);
+  font-size: var(--fs-caption);
+  color: var(--primary);
+  background: rgba(79, 124, 255, 0.1);
   padding: 3px 12px;
-  border-radius: 20px;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
 }
 
 .content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: var(--space-lg);
   width: 100%;
 }
 
 @media (max-width: 768px) {
-  .topbar-inner { padding: 0 16px; }
-  .nav { overflow-x: auto; justify-content: flex-start; }
-  .content { padding: 20px 16px; }
+  .topbar-inner { padding: 0 var(--space-md); }
+  .nav { overflow-x: auto; }
+  .logo-sub { display: none; }
+  .content { padding: var(--space-md); }
 }
 </style>
