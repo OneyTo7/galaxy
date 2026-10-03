@@ -33,23 +33,54 @@ async function handleSubmit() {
 <template>
   <div class="login-page">
     <div class="login-left">
-      <div class="brand">
-        <h1 class="brand-name">智学</h1>
-        <p class="brand-tagline">AI 认知诊断实验教学平台</p>
-        <p class="brand-desc">看见学生怎么错，对症下药</p>
-      </div>
-      <div class="features">
-        <div class="feature">
-          <span class="feature-num">01</span>
-          <span>AI 命题：一句话生成题面、用例、评分细则</span>
+      <div class="left-bg-grid"></div>
+      <div class="left-glow-1"></div>
+      <div class="left-glow-2"></div>
+
+      <div class="left-content">
+        <div class="brand">
+          <h1 class="brand-name">智学</h1>
+          <p class="brand-tagline">AI 认知诊断实验教学平台</p>
         </div>
-        <div class="feature">
-          <span class="feature-num">02</span>
-          <span>误区诊断：结构化归因，证据 + 知识点</span>
+
+        <p class="brand-desc">不只是判对错，更看见学生怎么错、卡在哪个点，并给出针对性练习。</p>
+
+        <div class="features">
+          <div class="feature">
+            <span class="feature-icon">✨</span>
+            <div>
+              <h4>AI 命题</h4>
+              <p>一句话生成题面、用例、评分细则与参考实现</p>
+            </div>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">🔍</span>
+            <div>
+              <h4>误区诊断</h4>
+              <p>结构化归因，输出误区类型、证据与对应知识点</p>
+            </div>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">🎯</span>
+            <div>
+              <h4>变式练习</h4>
+              <p>换情境出题，针对同一知识点对症练习</p>
+            </div>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">📊</span>
+            <div>
+              <h4>学情看板</h4>
+              <p>误区分布与知识点薄弱可视化，教学有据可依</p>
+            </div>
+          </div>
         </div>
-        <div class="feature">
-          <span class="feature-num">03</span>
-          <span>变式练习：换情境出题，对症练习</span>
+
+        <div class="tech-stack">
+          <span>FastAPI</span>
+          <span>Vue 3</span>
+          <span>LangChain</span>
+          <span>移动云 MoMA</span>
         </div>
       </div>
     </div>
@@ -95,75 +126,156 @@ async function handleSubmit() {
   display: grid;
   grid-template-columns: 1fr 1fr;
   height: 100vh;
+  overflow: hidden;
 }
 
+/* 左侧品牌区 */
 .login-left {
-  background: linear-gradient(135deg, #1B2838 0%, #2B3D5C 50%, #1B2838 100%);
+  position: relative;
+  background: linear-gradient(160deg, #1B2838 0%, #1E2F48 40%, #15202E 100%);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.left-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(91, 127, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 127, 255, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%);
+}
+
+.left-glow-1 {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  top: -200px;
+  left: -100px;
+  background: radial-gradient(circle, rgba(91, 127, 255, 0.18) 0%, transparent 60%);
+  border-radius: 50%;
+}
+
+.left-glow-2 {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  bottom: -150px;
+  right: -100px;
+  background: radial-gradient(circle, rgba(232, 163, 69, 0.12) 0%, transparent 60%);
+  border-radius: 50%;
+}
+
+.left-content {
+  position: relative;
+  z-index: 1;
   padding: 64px;
   color: #fff;
+  max-width: 520px;
 }
 
 .brand-name {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 56px;
+  font-size: 64px;
   font-weight: 700;
   color: #5B7FFF;
   margin: 0;
   line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .brand-tagline {
-  font-size: 18px;
-  color: #B0BEC5;
-  margin: 12px 0 4px;
+  font-size: 20px;
+  color: #B0C4DE;
+  margin: 14px 0 0;
+  font-weight: 500;
 }
 
 .brand-desc {
   font-size: 15px;
   color: #78909C;
-  margin: 0 0 48px;
+  margin: 8px 0 48px;
+  line-height: 1.6;
+  max-width: 420px;
 }
 
 .features {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  margin-bottom: 40px;
 }
 
 .feature {
   display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.feature-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  background: rgba(91, 127, 255, 0.12);
+  border-radius: 10px;
+}
+
+.feature h4 {
   font-size: 15px;
-  color: #CFD8DC;
+  font-weight: 600;
+  color: #E0E6ED;
+  margin: 0 0 4px;
 }
 
-.feature-num {
-  font-family: 'Space Grotesk';
+.feature p {
   font-size: 13px;
-  font-weight: 700;
-  color: #5B7FFF;
-  background: rgba(91, 127, 255, 0.15);
-  padding: 4px 10px;
-  border-radius: 4px;
+  color: #78909C;
+  margin: 0;
+  line-height: 1.5;
 }
 
+.tech-stack {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tech-stack span {
+  font-family: 'JetBrains Mono';
+  font-size: 11px;
+  color: #5B7FFF;
+  background: rgba(91, 127, 255, 0.1);
+  border: 1px solid rgba(91, 127, 255, 0.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* 右侧登录区 */
 .login-right {
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--galaxy-bg);
+  background-image:
+    radial-gradient(ellipse 600px 400px at 50% 20%, rgba(91, 127, 255, 0.08) 0%, transparent 60%);
+  padding: 24px;
 }
 
 .login-card {
   width: 400px;
-  background: var(--galaxy-card);
+  max-width: 100%;
+  background: var(--galaxy-card-solid);
   border: 1px solid var(--galaxy-border);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 40px;
+  box-shadow: var(--shadow-lg);
 }
 
 .login-card h2 {
