@@ -73,9 +73,9 @@ function logout() {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(13, 17, 23, 0.8);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: rgba(15, 25, 35, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--galaxy-border);
 }
 
@@ -96,6 +96,7 @@ function logout() {
   font-weight: 700;
   color: var(--galaxy-accent);
   letter-spacing: -0.03em;
+  text-shadow: 0 0 16px rgba(91, 127, 255, 0.3);
 }
 
 .nav { display: flex; gap: 2px; flex: 1; justify-content: center; }
@@ -109,7 +110,7 @@ function logout() {
   transition: all 0.15s;
 }
 .nav a:hover { background: var(--galaxy-accent-soft); color: var(--galaxy-accent); }
-.nav a.active { background: var(--galaxy-accent); color: #fff; font-weight: 600; }
+.nav a.active { background: var(--galaxy-accent); color: #fff; font-weight: 600; box-shadow: 0 0 12px rgba(91, 127, 255, 0.3); }
 
 .user-area { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .role-pill {
