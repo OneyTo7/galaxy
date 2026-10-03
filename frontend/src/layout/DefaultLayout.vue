@@ -15,7 +15,9 @@ const roleLabel = computed(() => {
 const navItems = computed(() => {
   if (auth.role === 'student') return [
     { to: '/dashboard', label: '我的课程' },
+    { to: '/enroll', label: '选课' },
     { to: '/my-submissions', label: '我的提交' },
+    { to: '/my-grades', label: '我的成绩' },
     { to: '/diagnose', label: '误区诊断' },
     { to: '/variant', label: '变式练习' },
     { to: '/appeal', label: '申诉' },

@@ -44,3 +44,13 @@ export async function enroll(classId: number) {
   const res = await request.post(`/classes/${classId}/enrollments`)
   return res.data
 }
+
+export async function listAllCourses() {
+  const res = await request.get('/courses')
+  return res.data
+}
+
+export async function listClassesByCourse(courseId: number) {
+  const res = await request.get(`/courses/${courseId}/classes`)
+  return res.data
+}
