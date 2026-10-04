@@ -11,7 +11,6 @@ class DiagnoseOut(BaseModel):
     misconception_type: str
     evidence: str
     knowledge_point: str
-    knowledge_point_code: str = ""
     knowledge_point_id: int | None = None
     confidence: float
     evidence_validated: bool = True

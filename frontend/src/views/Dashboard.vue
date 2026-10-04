@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listMyCourses, listCourseAssignments, listCourseStudents } from '@/api/organization'
 import { listMySubmissions } from '@/api/submission'
-import { ElMessage } from 'element-plus'
 
 interface Course { id: number; name: string; code: string; teacher_id: number; created_at: string }
 interface CourseAssign { id: number; title: string; status: string; lang: string; submitted?: boolean; score?: number | null }

@@ -222,7 +222,6 @@ const heatOption = computed((): any => {
 </template>
 
 <style scoped>
-.page { max-width: 100%; }
 
 .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
 

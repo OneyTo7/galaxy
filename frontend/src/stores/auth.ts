@@ -9,13 +9,18 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(username: string, password: string) {
     const res = await loginApi(username, password)
-    token.value = res.access_token
+    let decodedRole = ''
     try {
       const payload = JSON.parse(atob(res.access_token.split('.')[1]))
-      role.value = payload.role || ''
+      decodedRole = payload.role || ''
     } catch {
-      role.value = ''
+      throw new Error('登录响应异常：Token 无法解析，请联系管理员')
     }
+    if (!decodedRole) {
+      throw new Error('登录响应异常：Token 缺少角色信息')
+    }
+    token.value = res.access_token
+    role.value = decodedRole
     localStorage.setItem('token', token.value)
     localStorage.setItem('role', role.value)
   }

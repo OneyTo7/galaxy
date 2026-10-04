@@ -26,15 +26,20 @@ const masteryPoints = ref<MasteryCellOut[]>([])
 const masteryEvents = ref<MasteryEventOut[]>([])
 const detailLoading = ref(false)
 
-// 学生 ID 从 query 取
+// 学生 ID 与课程 ID 从 query 取，缺失时提示并返回
 const studentId = Number(route.query.student) || 0
 const courseId = Number(route.query.course) || 1
 
 async function load() {
+  if (!studentId || !route.query.student) {
+    ElMessage.warning('缺少学生参数，请从学情看板进入')
+    router.back()
+    return
+  }
   loading.value = true
   try {
     const all = await listMySubmissions()
-    submissions.value = all.filter((s: SubmissionOut) => s.user_id === studentId || !studentId)
+    submissions.value = all.filter((s: SubmissionOut) => s.user_id === studentId)
     if (submissions.value.length > 0) viewSub(submissions.value[0])
     // D2: 加载掌握度雷达 + 成长曲线
     try {
@@ -237,7 +242,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.page { max-width: 100%; }
 
 .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
 

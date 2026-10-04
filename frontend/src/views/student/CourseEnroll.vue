@@ -3,7 +3,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listMyCourses, listAllCourses, listClassesByCourse, enroll } from '@/api/organization'
-import { listMySubmissions } from '@/api/submission'
 import { ElMessage } from 'element-plus'
 
 interface Course { id: number; name: string; code: string; teacher_id: number; created_at: string }
@@ -14,7 +13,6 @@ const router = useRouter()
 const courses = ref<Course[]>([])
 const loading = ref(false)
 const selectedCourse = ref<Course | null>(null)
-const mySubmissions = ref<{ id: number; assignment_id: number; status: string; score: number }[]>([])
 const detailLoading = ref(false)
 
 // 选课弹窗
@@ -36,12 +34,8 @@ async function loadCourses() {
 async function selectCourse(c: Course) {
   selectedCourse.value = c
   detailLoading.value = true
-  mySubmissions.value = []
   try {
-    if (auth.role === 'student') {
-      const allSubs = await listMySubmissions()
-      mySubmissions.value = allSubs
-    }
+    // 教师/学生均可查看班级列表
   } catch (e) { console.error('加载失败', e) }
   finally { detailLoading.value = false }
 }
@@ -173,13 +167,7 @@ onMounted(loadCourses)
   </div>
 </template>
 
-<script lang="ts">
-import { ArrowDown } from '@element-plus/icons-vue'
-export default { components: { ArrowDown } }
-</script>
-
 <style scoped>
-.page { max-width: 100%; }
 .header-actions { display: flex; gap: var(--space-xs); }
 
 .split-layout { display: grid; grid-template-columns: 280px 1fr; gap: var(--space-md); }
@@ -199,12 +187,12 @@ export default { components: { ArrowDown } }
 .sidebar-item:hover { border-color: var(--primary); }
 .sidebar-item.active { border-color: var(--primary); background: var(--bg-hover); }
 .sidebar-item h4 { margin: 0; font-size: var(--fs-body); color: var(--ink); }
-.code { font-size: var(--fs-caption); color: var(--text-placeholder); font-family: 'JetBrains Mono'; }
+.code { font-size: var(--fs-caption); color: var(--text-placeholder); font-family: 'SF Mono', Menlo, Consolas, monospace; }
 
 .main-content { min-height: 300px; }
 .detail-header { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-xs); }
 .detail-header h2 { margin: 0; font-size: var(--fs-h2); color: var(--ink); }
-.code-tag { font-size: var(--fs-caption); color: var(--text-secondary); background: var(--bg-hover); padding: 3px 10px; border-radius: var(--radius-sm); font-family: 'JetBrains Mono'; }
+.code-tag { font-size: var(--fs-caption); color: var(--text-secondary); background: var(--bg-hover); padding: 3px 10px; border-radius: var(--radius-sm); font-family: 'SF Mono', Menlo, Consolas, monospace; }
 .detail-desc { color: var(--text-secondary); font-size: var(--fs-body); }
 
 /* 选课弹窗 */

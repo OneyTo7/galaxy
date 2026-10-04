@@ -56,10 +56,9 @@ class AssignmentService:
         lang: str,
         cases: list[dict],
         assigned_user_id: int,
-        knowledge_point_id: int | None = None,
     ) -> AssignmentDomain:
         """D3: 创建变式练习作业（不挂课程，自动 published）。
-        若提供 knowledge_point_id，则同步打 Q 矩阵标签，使提交后掌握度可追踪。"""
+        知识点标签由调用方通过 mastery_svc.tag_practice 单独打，职责分离。"""
         data = {
             "course_id": None,
             "title": title,
@@ -82,10 +81,7 @@ class AssignmentService:
             }
             for idx, tc in enumerate(cases)
         ]
-        domain = self._repo.create(teacher_id, data, test_cases)
-        if knowledge_point_id is not None:
-            self._repo.replace_assignment_tags(domain.id, [(knowledge_point_id, 1.0)])
-        return domain
+        return self._repo.create(teacher_id, data, test_cases)
 
     async def generate(self, teacher_id: int, course_id: int | None, prompt: str) -> AssignmentDomain:
         if course_id:

@@ -108,8 +108,6 @@ onMounted(loadCourses)
 </template>
 
 <style scoped>
-.page { max-width: 100%; }
-.page-header { margin-bottom: var(--space-lg); }
 
 .examples { display: flex; align-items: center; gap: var(--space-xs); margin-top: var(--space-sm); flex-wrap: wrap; }
 .examples-label { font-size: var(--fs-caption); color: var(--text-secondary); }

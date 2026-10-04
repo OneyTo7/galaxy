@@ -134,8 +134,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.page { max-width: 100%; }
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-lg); }
 
 .split-layout { display: grid; grid-template-columns: 260px 1fr; gap: var(--space-lg); }
 

@@ -56,7 +56,6 @@ export interface DiagnoseOut {
   misconception_type: string
   evidence: string
   knowledge_point: string
-  knowledge_point_code: string
   knowledge_point_id: number | null
   confidence: number
   evidence_validated: boolean

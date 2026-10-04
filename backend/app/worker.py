@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import logging
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logger = logging.getLogger("galaxy.worker")
 
 from app.contexts.assignment.providers.moma import AssignmentGenerator
 from app.contexts.assignment.repository import SQLAlchemyAssignmentRepo
@@ -31,7 +38,7 @@ class _OvercomeMarker(OvercomeMarkerProtocol):
 
 
 def run_worker() -> None:
-    print("evaluation worker started, waiting for submissions...")
+    logger.info("evaluation worker started, waiting for submissions...")
     while True:
         submission_id = consume_submission(timeout=5)
         if submission_id is None:
@@ -57,12 +64,12 @@ def run_worker() -> None:
                 results = eval_svc.run(sub.code, sub.lang, assignment.test_cases, sub.id)
                 score = eval_svc.score(results, assignment.test_cases)
                 submission_svc.update_score(sub.id, score)
-                print(f"evaluated submission {sub.id} score {score}")
+                logger.info("evaluated submission %s score %s", sub.id, score)
                 # D2: 评分后记录掌握度观测（失败不回滚评分）
                 try:
                     mastery_svc.record_submission(sub.id)
-                except Exception as exc:
-                    print(f"mastery record failed for {sub.id}: {exc}")
+                except Exception:
+                    logger.exception("mastery record failed for submission %s", sub.id)
             except NotFoundError:
                 continue
         finally:

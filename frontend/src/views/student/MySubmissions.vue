@@ -136,21 +136,21 @@ onMounted(load)
   flex-wrap: wrap; gap: var(--space-sm);
 }
 .sub-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.sub-id { font-family: 'Space Grotesk'; font-weight: 700; font-size: 18px; color: var(--primary); }
+.sub-id { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif; font-weight: 700; font-size: 18px; color: var(--primary); }
 .sub-assign { font-size: 14px; color: var(--text-secondary); }
-.sub-score { font-family: 'Space Grotesk'; font-weight: 700; font-size: 16px; color: var(--ink); }
+.sub-score { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif; font-weight: 700; font-size: 16px; color: var(--ink); }
 .sub-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .detail-content { min-height: 200px; }
 .detail-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .detail-head h3 { margin: 0; font-size: 18px; color: var(--ink); }
-.detail-score { font-family: 'Space Grotesk'; font-weight: 700; font-size: 20px; color: var(--primary); }
+.detail-score { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif; font-weight: 700; font-size: 20px; color: var(--primary); }
 .detail-desc { color: var(--text-secondary); white-space: pre-wrap; line-height: 1.6; font-size: 14px; margin: 0 0 20px; }
 .detail-cases { margin-top: 8px; }
 .case-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; flex-wrap: wrap; }
 .case-row.fail { color: var(--danger); }
 .case-icon { font-weight: 700; }
 .case-label { flex: 1; }
-.case-err { color: var(--danger); font-family: 'JetBrains Mono'; font-size: 12px; }
+.case-err { color: var(--danger); font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; }
 .case-time { color: var(--text-secondary); font-size: 12px; }
 </style>

@@ -48,7 +48,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .code-editor {
   height: 400px;
-  border: 1px solid var(--galaxy-border);
+  border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
 }

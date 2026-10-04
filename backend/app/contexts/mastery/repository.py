@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from sqlalchemy import func as sa_func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.contexts.mastery.models import (
@@ -28,14 +30,7 @@ class MasteryRepoProtocol:
         self, assignment_id: int, items: list[tuple[int, float]]
     ) -> None: ...
     def get_mastery(self, user_id: int, kp_id: int) -> StudentMasteryDomain | None: ...
-    def create_mastery(
-        self, user_id: int, kp_id: int, mastery: float, attempts: int, correct: int, status: str
-    ) -> StudentMasteryDomain: ...
-    def update_mastery(
-        self, mastery_id: int, mastery: float, attempts: int, correct: int, status: str
-    ) -> StudentMasteryDomain | None: ...
-    def event_exists(self, user_id: int, kp_id: int, source: str, submission_id: int) -> bool: ...
-    def insert_event(
+    def apply_event(
         self,
         user_id: int,
         kp_id: int,
@@ -44,7 +39,11 @@ class MasteryRepoProtocol:
         observed: bool,
         before: float,
         after: float,
-    ) -> None: ...
+        attempts: int,
+        correct: int,
+        status: str,
+        existing_mastery_id: int | None,
+    ) -> bool: ...
     def list_mastery_by_users(
         self, user_ids: list[int], kp_ids: list[int] | None = None
     ) -> list[StudentMasteryDomain]: ...
@@ -140,61 +139,61 @@ class SQLAlchemyMasteryRepo(MasteryRepoProtocol):
         )
         return self._m_to_domain(m) if m else None
 
-    def create_mastery(self, user_id, kp_id, mastery, attempts, correct, status):
-        m = StudentMastery(
-            user_id=user_id,
-            knowledge_point_id=kp_id,
-            mastery=mastery,
-            attempts=attempts,
-            correct=correct,
-            status=status,
-        )
-        self._db.add(m)
-        self._db.commit()
-        self._db.refresh(m)
-        return self._m_to_domain(m)
+    def apply_event(
+        self,
+        user_id: int,
+        kp_id: int,
+        submission_id: int,
+        source: str,
+        observed: bool,
+        before: float,
+        after: float,
+        attempts: int,
+        correct: int,
+        status: str,
+        existing_mastery_id: int | None,
+    ) -> bool:
+        """原子地更新掌握度 + 插入事件（单次 commit）。
 
-    def update_mastery(self, mastery_id, mastery, attempts, correct, status):
-        m = self._db.get(StudentMastery, mastery_id)
-        if not m:
-            return None
-        m.mastery = mastery
-        m.attempts = attempts
-        m.correct = correct
-        m.status = status
-        from sqlalchemy import func as sa_func
-
-        m.last_updated_at = sa_func.now()
-        self._db.commit()
-        self._db.refresh(m)
-        return self._m_to_domain(m)
-
-    def event_exists(self, user_id, kp_id, source, submission_id):
-        return (
-            self._db.query(MasteryEvent.id)
-            .filter(
-                MasteryEvent.user_id == user_id,
-                MasteryEvent.knowledge_point_id == kp_id,
-                MasteryEvent.source == source,
-                MasteryEvent.submission_id == submission_id,
+        返回 True 表示成功，False 表示因唯一约束冲突跳过（幂等）。
+        """
+        try:
+            if existing_mastery_id is not None:
+                m = self._db.get(StudentMastery, existing_mastery_id)
+                if m:
+                    m.mastery = after
+                    m.attempts = attempts
+                    m.correct = correct
+                    m.status = status
+                    m.last_updated_at = sa_func.now()
+            else:
+                self._db.add(
+                    StudentMastery(
+                        user_id=user_id,
+                        knowledge_point_id=kp_id,
+                        mastery=after,
+                        attempts=attempts,
+                        correct=correct,
+                        status=status,
+                    )
+                )
+            self._db.add(
+                MasteryEvent(
+                    user_id=user_id,
+                    knowledge_point_id=kp_id,
+                    submission_id=submission_id,
+                    source=source,
+                    observed=observed,
+                    mastery_before=before,
+                    mastery_after=after,
+                )
             )
-            .first()
-            is not None
-        )
+            self._db.commit()
+            return True
+        except IntegrityError:
+            self._db.rollback()
+            return False
 
-    def insert_event(self, user_id, kp_id, submission_id, source, observed, before, after):
-        self._db.add(
-            MasteryEvent(
-                user_id=user_id,
-                knowledge_point_id=kp_id,
-                submission_id=submission_id,
-                source=source,
-                observed=observed,
-                mastery_before=before,
-                mastery_after=after,
-            )
-        )
-        self._db.commit()
 
     def list_mastery_by_users(self, user_ids, kp_ids=None):
         if not user_ids:

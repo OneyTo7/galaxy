@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { listAssignments, listPublished, publishAssignment, deleteAssignment } from '@/api/assignment'
@@ -147,7 +147,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-.page { max-width: 100%; }
 
 .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
 .assign-card { display: flex; flex-direction: column; }

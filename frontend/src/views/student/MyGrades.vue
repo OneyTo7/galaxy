@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listMySubmissions } from '@/api/submission'
 import { listMyCourses, listCourseAssignments } from '@/api/organization'
@@ -101,8 +101,10 @@ onMounted(loadCourses)
       </el-select>
     </div>
 
-    <div v-if="!loading && courses.length === 0" class="empty-state">
-      <p class="empty-text">暂未选课</p>
+    <div v-if="!loading && courses.length === 0" class="empty-state-v2">
+      <div class="empty-ico"><el-icon><Collection /></el-icon></div>
+      <p>暂未选课</p>
+      <el-button type="primary" @click="router.push('/enroll')">去选课</el-button>
     </div>
 
     <template v-else-if="selectedCourseId">
@@ -153,10 +155,6 @@ onMounted(loadCourses)
 </template>
 
 <style scoped>
-.page { max-width: 100%; }
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-lg); }
-.page-desc { margin: 0; font-size: var(--fs-body); color: var(--text-secondary); }
-.empty-state { text-align: center; padding: var(--space-xl) 0; color: var(--text-secondary); }
 
 .stat-row { display: flex; gap: var(--space-md); margin-bottom: var(--space-lg); }
 .stat-card { flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); box-shadow: var(--shadow-card); }

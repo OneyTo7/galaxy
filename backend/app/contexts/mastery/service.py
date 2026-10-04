@@ -76,14 +76,16 @@ class MasteryService:
         tags = self._repo.tags_for_assignments([assignment.id])
         if not tags:
             return
-        source = "variant" if assignment.kind == "practice" else "assignment"
         results = self._evaluation_svc.list_by_submission(submission_id)
+        if not results:
+            return
+        source = "variant" if assignment.kind == "practice" else "assignment"
         passed_by_case = {r.case_id: r.passed for r in results}
-        total_w = sum(tc.weight for tc in assignment.test_cases) or 1
+        total_w = sum(tc.weight for tc in assignment.test_cases)
         passed_w = sum(
             tc.weight for tc in assignment.test_cases if passed_by_case.get(tc.id)
         )
-        observed = (passed_w / total_w) >= bkt.PASS_RATIO_THRESHOLD
+        observed = (passed_w / total_w if total_w > 0 else 0) >= bkt.PASS_RATIO_THRESHOLD
         for tag in tags:
             self._apply_event(
                 submission.user_id, tag.knowledge_point_id, submission_id, source, observed
@@ -107,8 +109,6 @@ class MasteryService:
         source: str,
         observed: bool,
     ) -> None:
-        if self._repo.event_exists(user_id, kp_id, source, submission_id):
-            return
         kp = self._repo.get_kp(kp_id)
         if not kp:
             return
@@ -124,14 +124,13 @@ class MasteryService:
         attempts = (current.attempts + 1) if current else 1
         correct = (current.correct + (1 if observed else 0)) if current else (1 if observed else 0)
         status = bkt.status_of(after, attempts)
-        if current:
-            self._repo.update_mastery(current.id, after, attempts, correct, status)
-        else:
-            self._repo.create_mastery(user_id, kp_id, after, attempts, correct, status)
-        self._repo.insert_event(
-            user_id, kp_id, submission_id, source, observed, before, after
+        # 原子地更新掌握度 + 插入事件（单次 commit），并发下唯一约束保证幂等
+        ok = self._repo.apply_event(
+            user_id, kp_id, submission_id, source, observed,
+            before, after, attempts, correct, status,
+            existing_mastery_id=current.id if current else None,
         )
-        if observed:
+        if ok and observed:
             self._overcome.mark_overcome(user_id, kp_id)
 
     # ---------- 查询 ----------
@@ -214,6 +213,8 @@ class MasteryService:
 
     def my_mastery(self, course_id: int, user_id: int) -> dict:
         self._org_svc.get_course(course_id)
+        if not self._org_svc.is_enrolled(user_id, course_id):
+            raise ForbiddenError("未选该课程")
         return {
             "course_id": course_id,
             "user_id": user_id,
@@ -227,6 +228,8 @@ class MasteryService:
 
     def my_events(self, course_id: int, user_id: int) -> list[MasteryEventDomain]:
         self._org_svc.get_course(course_id)
+        if not self._org_svc.is_enrolled(user_id, course_id):
+            raise ForbiddenError("未选该课程")
         kps = self._course_kps(course_id)
         return self._repo.list_events(user_id, kp_ids=[k.id for k in kps] or None)
 

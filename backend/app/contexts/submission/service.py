@@ -26,7 +26,10 @@ class SubmissionService:
 
     def submit(self, user_id: int, assignment_id: int, code: str, lang: str):
         assignment = self._assignment_svc.get(assignment_id)
-        if assignment.course_id and not self._org_svc.is_enrolled(user_id, assignment.course_id):
+        if assignment.kind == "practice":
+            if assignment.assigned_user_id != user_id:
+                raise ForbiddenError("无权提交该靶向练习")
+        elif assignment.course_id and not self._org_svc.is_enrolled(user_id, assignment.course_id):
             raise ForbiddenError("未选该课程，无法提交")
         domain = self._sub_repo.create(user_id, assignment_id, code, lang, "pending", 0)
         enqueue_submission(domain.id)

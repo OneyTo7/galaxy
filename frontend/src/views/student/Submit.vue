@@ -105,7 +105,7 @@ async function autoDiagnose() {
 <template>
   <div v-if="!assignment" class="empty-state-v2 rise-in" style="--enter-idx:0">
     <div class="empty-ico"><el-icon><Document /></el-icon></div>
-    <p>未指定作业，请从<a href="/assignments" style="color: var(--primary)">作业列表</a>选择一道题。</p>
+    <p>未指定作业，请从<router-link to="/assignments" style="color: var(--primary)">作业列表</router-link>选择一道题。</p>
   </div>
 
   <div v-else class="split-layout">
@@ -244,7 +244,7 @@ async function autoDiagnose() {
 }
 .case-item pre {
   margin: 6px 0 0;
-  font-family: 'JetBrains Mono';
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
   font-size: var(--fs-code);
   color: var(--text-secondary);
 }
@@ -279,7 +279,7 @@ async function autoDiagnose() {
   margin-bottom: 12px;
 }
 .score {
-  font-family: 'Space Grotesk';
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: var(--primary);
@@ -296,7 +296,7 @@ async function autoDiagnose() {
 .case-icon { font-weight: 700; }
 .case-err {
   color: var(--danger);
-  font-family: 'JetBrains Mono';
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
   font-size: var(--fs-code);
 }
 
@@ -333,7 +333,7 @@ async function autoDiagnose() {
   border-radius: var(--radius-sm);
 }
 .diag-confidence {
-  font-family: 'Space Grotesk';
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
   font-weight: 700;
   font-size: 16px;
   color: var(--text-secondary);

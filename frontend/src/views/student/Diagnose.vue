@@ -93,7 +93,6 @@ onMounted(loadSubmissions)
           <span class="detail-label">知识点</span>
           <div class="kp-tags">
             <el-tag size="large" effect="plain">{{ result.knowledge_point }}</el-tag>
-            <el-tag v-if="result.knowledge_point_code" size="small" type="info">{{ result.knowledge_point_code }}</el-tag>
           </div>
         </div>
         <div class="detail-block" v-if="result.status === 'overcome'">
