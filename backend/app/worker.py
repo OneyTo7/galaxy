@@ -10,13 +10,24 @@ from app.contexts.assignment.repository import SQLAlchemyAssignmentRepo
 from app.contexts.assignment.service import AssignmentService
 from app.contexts.evaluation.repository import SQLEvaluationRepo
 from app.contexts.evaluation.service import EvaluationService
+from app.contexts.mastery.repository import SQLAlchemyMasteryRepo
+from app.contexts.mastery.service import MasteryService, OvercomeMarkerProtocol
 from app.contexts.organization.repository import SQLOrganizationRepo
 from app.contexts.organization.service import OrganizationService
 from app.contexts.submission.repository import SQLAlchemySubmissionRepo
 from app.contexts.submission.service import SubmissionService
+from app.contexts.diagnose.repository import SQLAlchemyMisconceptionRepo
 from app.core.database import SessionLocal
 from app.core.exceptions import NotFoundError
 from app.core.queue import consume_submission
+
+
+class _OvercomeMarker(OvercomeMarkerProtocol):
+    def __init__(self, db) -> None:
+        self._repo = SQLAlchemyMisconceptionRepo(db)
+
+    def mark_overcome(self, user_id, knowledge_point_id):
+        return self._repo.mark_open_overcome(user_id, knowledge_point_id)
 
 
 def run_worker() -> None:
@@ -32,6 +43,14 @@ def run_worker() -> None:
             assign_svc = AssignmentService(SQLAlchemyAssignmentRepo(db), AssignmentGenerator(), org_svc)
             sub_repo = SQLAlchemySubmissionRepo(db)
             submission_svc = SubmissionService(sub_repo, assign_svc, eval_svc, org_svc)
+            mastery_svc = MasteryService(
+                repo=SQLAlchemyMasteryRepo(db),
+                evaluation_svc=eval_svc,
+                submission_svc=submission_svc,
+                assignment_svc=assign_svc,
+                org_svc=org_svc,
+                overcome_marker=_OvercomeMarker(db),
+            )
             try:
                 sub = submission_svc.get(submission_id)
                 assignment = assign_svc.get(sub.assignment_id)
@@ -39,6 +58,11 @@ def run_worker() -> None:
                 score = eval_svc.score(results, assignment.test_cases)
                 submission_svc.update_score(sub.id, score)
                 print(f"evaluated submission {sub.id} score {score}")
+                # D2: 评分后记录掌握度观测（失败不回滚评分）
+                try:
+                    mastery_svc.record_submission(sub.id)
+                except Exception as exc:
+                    print(f"mastery record failed for {sub.id}: {exc}")
             except NotFoundError:
                 continue
         finally:

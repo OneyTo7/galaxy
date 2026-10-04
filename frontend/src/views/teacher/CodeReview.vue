@@ -24,7 +24,7 @@ async function load() {
   try {
     const [a, subs] = await Promise.all([getAssignment(id), listMySubmissions()])
     assignment.value = a
-    submissions.value = subs.filter(s => s.assignment_id === id)
+    submissions.value = subs.filter((s: any) => s.assignment_id === id)
     if (submissions.value.length > 0) viewSubmission(submissions.value[0])
   } catch (e) { console.error('加载失败', e) }
   finally { loading.value = false }
@@ -54,17 +54,20 @@ onMounted(load)
 <template>
   <div class="page" v-loading="loading">
     <div class="page-header">
-      <div>
-        <h1>代码批改</h1>
-        <p class="page-desc">{{ assignment?.title || '查看学生提交与 AI 诊断' }}</p>
+      <div class="page-title-with-chip">
+        <span class="page-title-chip"><el-icon><EditPen /></el-icon></span>
+        <div>
+          <h1>代码批改</h1>
+          <p class="page-desc">{{ assignment?.title || '查看学生提交与 AI 诊断' }}</p>
+        </div>
       </div>
-      <el-button @click="router.back()">返回</el-button>
+      <el-button @click="router.back()"><el-icon style="margin-right:4px"><Back /></el-icon>返回</el-button>
     </div>
 
     <div class="split-layout">
-      <aside class="sidebar">
-        <div class="card">
-          <h3>提交列表</h3>
+      <aside class="sidebar rise-in" style="--enter-idx:0">
+        <div class="panel">
+          <div class="section-title"><span class="title-ico"><el-icon><List /></el-icon></span>提交列表</div>
           <div class="stat-mini">
             <span>总提交 {{ submissions.length }}</span>
             <span>平均分 {{ avgScore }}</span>
@@ -81,9 +84,9 @@ onMounted(load)
 
       <main class="main-content">
         <div v-if="selectedSubmission" v-loading="detailLoading">
-          <div class="card">
+          <div class="panel rise-in" style="--enter-idx:1">
             <div class="eval-header">
-              <h3>提交 #{{ selectedSubmission.id }}</h3>
+              <div class="section-title" style="margin:0"><span class="title-ico"><el-icon><DataLine /></el-icon></span>提交 #{{ selectedSubmission.id }}</div>
               <el-tag :type="selectedSubmission.status === 'done' ? 'success' : 'warning'" size="small">{{ selectedSubmission.status }}</el-tag>
               <span v-if="selectedSubmission.status === 'done'" class="score-big">{{ selectedSubmission.score }}分</span>
             </div>
@@ -99,9 +102,9 @@ onMounted(load)
             </div>
           </div>
 
-          <div v-if="diagnosis" class="card diagnosis-card">
+          <div v-if="diagnosis" class="panel diagnosis-card rise-in" style="--enter-idx:2">
             <div class="diag-head">
-              <span class="diag-badge">AI 误区诊断</span>
+              <span class="diag-badge"><el-icon style="margin-right:4px;vertical-align:-2px"><Aim /></el-icon>AI 误区诊断</span>
               <span class="diag-conf">{{ (diagnosis.confidence * 100).toFixed(0) }}%</span>
             </div>
             <div class="diag-body">
@@ -121,8 +124,9 @@ onMounted(load)
           </div>
         </div>
 
-        <div v-else class="empty-state">
-          <p class="empty-text">从左侧选择一条提交查看详情</p>
+        <div v-else class="empty-state-v2 rise-in" style="--enter-idx:1">
+          <span class="empty-ico"><el-icon><Document /></el-icon></span>
+          <p>从左侧选择一条提交查看详情</p>
         </div>
       </main>
     </div>
@@ -132,13 +136,8 @@ onMounted(load)
 <style scoped>
 .page { max-width: 100%; }
 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-lg); }
-.page-desc { margin: 0; font-size: var(--fs-body); color: var(--text-secondary); }
 
 .split-layout { display: grid; grid-template-columns: 260px 1fr; gap: var(--space-lg); }
-
-.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); margin-bottom: var(--space-md); box-shadow: var(--shadow-card); }
-.card h3 { margin: 0 0 var(--space-sm); font-size: var(--fs-h3); }
-.card h4 { font-size: var(--fs-body); font-weight: 500; margin: 0 0 var(--space-xs); }
 
 .stat-mini { display: flex; gap: var(--space-md); font-size: var(--fs-caption); color: var(--text-secondary); margin-bottom: var(--space-sm); }
 .sub-list { display: flex; flex-direction: column; gap: var(--space-xs); }
@@ -156,7 +155,7 @@ onMounted(load)
 .case-row.fail { color: var(--danger); }
 .case-icon { font-weight: 700; }
 .case-err { color: var(--danger); font-size: var(--fs-code); }
-.case-time { margin-left: auto; color: var(--text-placeholder); font-size: var(--fs-caption); }
+.case-time { margin-left: auto; color: var(--text-secondary); font-size: var(--fs-caption); }
 
 .diagnosis-card { border-left: 3px solid var(--primary); }
 .diag-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm); }
@@ -167,7 +166,4 @@ onMounted(load)
 .diag-value { font-size: var(--fs-body); font-weight: 600; }
 .diag-value.primary { color: var(--primary); font-size: var(--fs-h3); }
 .diag-text { margin: 0; font-size: var(--fs-body); line-height: 1.6; }
-
-.empty-state { text-align: center; padding: var(--space-xl) 0; }
-.empty-text { color: var(--text-secondary); }
 </style>

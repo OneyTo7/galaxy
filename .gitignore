@@ -15,6 +15,10 @@ node_modules/
 dist/
 .vite/
 *.log
+*.tsbuildinfo
+# vue-tsc/tsc 编译产物：源码用 .ts/.vue，src 下不应出现 .js
+src/**/*.js
+src/**/*.vue.js
 
 # IDE
 .idea/

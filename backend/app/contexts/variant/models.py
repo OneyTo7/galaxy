@@ -19,6 +19,14 @@ class VariantExercise(Base):
     cases: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     scoring_points: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     lang: Mapped[str] = mapped_column(String(16), default="python")
+    # D3: 闭环落点
+    origin_misconception_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("misconceptions.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    practice_assignment_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey("assignments.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    difficulty: Mapped[str] = mapped_column(String(16), default="easy")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

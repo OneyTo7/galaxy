@@ -19,6 +19,7 @@ from app.contexts.report.router import router as report_router
 from app.contexts.submission.router import router as submission_router
 from app.contexts.user.router import router as user_router
 from app.contexts.variant.router import router as variant_router
+from app.contexts.mastery.router import router as mastery_router
 
 
 @asynccontextmanager
@@ -72,6 +73,7 @@ app.include_router(appeal_router)
 app.include_router(cheating_router)
 app.include_router(grade_router)
 app.include_router(audit_router)
+app.include_router(mastery_router)
 
 
 @app.get("/health", tags=["health"])

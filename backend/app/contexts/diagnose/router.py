@@ -34,7 +34,10 @@ async def diagnose(
         misconception_type=domain.misconception_type,
         evidence=domain.evidence,
         knowledge_point=domain.knowledge_point,
+        knowledge_point_id=domain.knowledge_point_id,
         confidence=domain.confidence,
+        evidence_validated=domain.evidence_validated,
+        status=domain.status,
     )
 
 
@@ -51,7 +54,10 @@ async def list_diagnosis(
             misconception_type=d.misconception_type,
             evidence=d.evidence,
             knowledge_point=d.knowledge_point,
+            knowledge_point_id=d.knowledge_point_id,
             confidence=d.confidence,
+            evidence_validated=d.evidence_validated,
+            status=d.status,
             created_at=d.created_at,
         )
         for d in svc.list_by_submission(submission_id)

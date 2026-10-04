@@ -37,28 +37,34 @@ async function handleCheck() {
 </script>
 
 <template>
-  <div class="cheating-page">
-    <div class="header">
-      <h1>反作弊检测</h1>
-      <p class="desc">AI 分析代码特征，判断是否疑似 AI 生成。可疑度越高越可能非手写。</p>
+  <div class="page cheating-page">
+    <div class="page-header">
+      <div class="page-title-with-chip">
+        <span class="page-title-chip"><el-icon><Warning /></el-icon></span>
+        <div>
+          <h1>反作弊检测</h1>
+          <p class="page-desc">AI 分析代码特征，判断是否疑似 AI 生成。可疑度越高越可能非手写。</p>
+        </div>
+      </div>
     </div>
 
-    <div class="action-bar">
+    <div class="panel action-bar rise-in" style="--enter-idx:0">
       <div class="input-group">
         <span class="label">选择提交</span>
         <el-select v-model="submissionId" placeholder="选择一条提交" style="width: 240px">
           <el-option v-for="s in submissions" :key="s.id" :label="`#${s.id} 作业${s.assignment_id} ${s.status} ${s.score}分`" :value="s.id" />
         </el-select>
       </div>
-      <el-button type="primary" :loading="loading" @click="handleCheck">开始检测</el-button>
+      <el-button type="primary" :loading="loading" @click="handleCheck"><el-icon style="margin-right:4px"><Aim /></el-icon>开始检测</el-button>
     </div>
 
-    <div v-if="!loading && reports.length === 0 && submissionId" class="empty">
+    <div v-if="!loading && reports.length === 0 && submissionId" class="empty-state-v2 rise-in" style="--enter-idx:1">
+      <span class="empty-ico"><el-icon><Document /></el-icon></span>
       <p>暂无检测记录，点击「开始检测」</p>
     </div>
 
     <div class="reports">
-      <div v-for="r in reports" :key="r.id" class="report-card" :class="r.status">
+      <div v-for="(r, idx) in reports" :key="r.id" class="panel report-card rise-in" :class="r.status" :style="`--enter-idx:${idx + 1}`">
         <div class="report-head">
           <div class="status-badge" :class="r.status">
             {{ r.status === 'flagged' ? '⚠ 疑似 AI 生成' : '✓ 未检出' }}
@@ -77,29 +83,20 @@ async function handleCheck() {
 
 <style scoped>
 .cheating-page { max-width: 700px; }
-.header { margin-bottom: 32px; }
-.header h1 { font-family: 'Space Grotesk'; font-size: 28px; margin: 0 0 8px; }
-.desc { color: var(--galaxy-text-secondary); font-size: 15px; margin: 0; }
-.action-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
-.input-group { display: flex; align-items: center; gap: 8px; }
-.label { font-size: 14px; color: var(--galaxy-text-secondary); }
-.empty { text-align: center; padding: 40px 0; color: var(--galaxy-text-secondary); }
+.action-bar { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg); }
+.input-group { display: flex; align-items: center; gap: var(--space-xs); }
+.label { font-size: var(--fs-body); color: var(--text-secondary); }
 
-.reports { display: flex; flex-direction: column; gap: 16px; }
-.report-card {
-  background: var(--galaxy-card); border: 1px solid var(--galaxy-border);
-  border-radius: 12px; padding: 24px; border-left: 4px solid var(--galaxy-success);
-}
-.report-card.flagged { border-left-color: var(--galaxy-error); }
-.report-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.status-badge {
-  font-size: 16px; font-weight: 700; padding: 6px 16px; border-radius: 6px;
-}
-.status-badge.cleared { color: var(--galaxy-success); background: rgba(61, 170, 82, 0.1); }
-.status-badge.flagged { color: var(--galaxy-error); background: rgba(232, 93, 93, 0.1); }
+.reports { display: flex; flex-direction: column; gap: var(--space-md); }
+.report-card { border-left: 4px solid var(--success); }
+.report-card.flagged { border-left-color: var(--danger); }
+.report-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
+.status-badge { font-size: var(--fs-body); font-weight: 700; padding: 6px 16px; border-radius: var(--radius-sm); }
+.status-badge.cleared { color: var(--success); background: rgba(18, 183, 106, 0.12); }
+.status-badge.flagged { color: var(--danger); background: rgba(239, 68, 68, 0.10); }
 .conf-display { text-align: right; }
-.conf-num { font-family: 'Space Grotesk'; font-size: 28px; font-weight: 700; display: block; }
-.conf-label { font-size: 12px; color: var(--galaxy-text-secondary); }
-.report-detail { font-size: 15px; line-height: 1.6; color: var(--galaxy-text); margin: 0 0 12px; }
-.report-time { font-size: 12px; color: var(--galaxy-text-secondary); }
+.conf-num { font-size: var(--fs-data); font-weight: 700; display: block; }
+.conf-label { font-size: var(--fs-caption); color: var(--text-secondary); }
+.report-detail { font-size: var(--fs-body); line-height: 1.6; color: var(--ink-2); margin: 0 0 var(--space-sm); }
+.report-time { font-size: var(--fs-caption); color: var(--text-secondary); }
 </style>

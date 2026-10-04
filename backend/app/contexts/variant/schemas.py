@@ -15,6 +15,8 @@ class VariantOut(BaseModel):
     cases: list = []
     scoring_points: list = []
     lang: str
+    difficulty: str = "easy"
+    practice_assignment_id: Optional[int] = None
 
 
 class VariantResult(BaseModel):
@@ -23,6 +25,7 @@ class VariantResult(BaseModel):
     cases: list
     scoring_points: list
     lang: str
+    difficulty: str = "easy"
 
 
 @dataclass(frozen=True)
@@ -34,4 +37,7 @@ class VariantDomain:
     cases: Optional[list]
     scoring_points: Optional[list]
     lang: str
+    difficulty: str
+    origin_misconception_id: Optional[int]
+    practice_assignment_id: Optional[int]
     created_at: datetime

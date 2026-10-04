@@ -36,7 +36,7 @@ onMounted(async () => {
   if (assignmentId) {
     try {
       assignment.value = await getAssignment(assignmentId)
-      form.lang = assignment.value.lang
+      form.lang = assignment.value!.lang
     } catch (e) {
       console.error('加载作业详情失败', e)
     }
@@ -103,24 +103,34 @@ async function autoDiagnose() {
 </script>
 
 <template>
-  <div v-if="!assignment" class="no-assignment">
-    <p>未指定作业，请从<a href="/assignments">作业列表</a>选择一道题。</p>
+  <div v-if="!assignment" class="empty-state-v2 rise-in" style="--enter-idx:0">
+    <div class="empty-ico"><el-icon><Document /></el-icon></div>
+    <p>未指定作业，请从<a href="/assignments" style="color: var(--primary)">作业列表</a>选择一道题。</p>
   </div>
 
   <div v-else class="split-layout">
     <!-- 左侧：题目 -->
-    <aside class="problem-panel">
-      <h1>{{ assignment.title }}</h1>
+    <aside class="problem-panel panel rise-in" style="--enter-idx:0">
+      <div class="problem-head">
+        <div class="page-title-with-chip">
+          <span class="page-title-chip"><el-icon><Reading /></el-icon></span>
+          <div>
+            <h1>{{ assignment.title }}</h1>
+            <p class="page-desc">按要求完成并提交代码，系统将自动评测并给出诊断。</p>
+          </div>
+        </div>
+      </div>
       <div class="meta">
+        <el-tag v-if="assignment.kind === 'practice'" size="small" type="warning">变式练习</el-tag>
         <el-tag size="small">要求语言 {{ assignment.lang }}</el-tag>
         <el-tag size="small" type="info">{{ assignment.test_cases?.length || 0 }} 个用例</el-tag>
       </div>
       <div class="section">
-        <h3>题目描述</h3>
+        <div class="section-title"><span class="title-ico"><el-icon><Document /></el-icon></span>题目描述</div>
         <p class="desc-text">{{ assignment.description }}</p>
       </div>
       <div v-if="assignment.test_cases?.some(tc => !tc.is_hidden)" class="section">
-        <h3>公开用例</h3>
+        <div class="section-title"><span class="title-ico"><el-icon><List /></el-icon></span>公开用例</div>
         <div v-for="tc in assignment.test_cases.filter(tc => !tc.is_hidden)" :key="tc.id" class="case-item">
           <span class="case-name">{{ tc.name || '用例 ' + tc.id }}</span>
           <pre>输入: {{ tc.input }}</pre>
@@ -131,18 +141,23 @@ async function autoDiagnose() {
 
     <!-- 右侧：代码 + 评测 -->
     <main class="code-panel">
-      <div class="code-header">
+      <div class="code-header panel rise-in" style="--enter-idx:1">
         <div class="code-header-left">
-          <h3>代码编辑</h3>
+          <div class="section-title" style="margin: 0"><span class="title-ico"><el-icon><Edit /></el-icon></span>代码编辑</div>
           <el-select v-model="form.lang" size="small" style="width: 120px">
             <el-option v-for="opt in langOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
           </el-select>
         </div>
-        <el-button type="primary" :loading="loading" @click="handleSubmit">提交评测</el-button>
+        <el-button type="primary" :loading="loading" @click="handleSubmit">
+          <el-icon style="margin-right: 4px"><Promotion /></el-icon>提交评测
+        </el-button>
       </div>
-      <CodeEditor v-model="form.code" :lang="form.lang" />
+      <div class="rise-in" style="--enter-idx:2">
+        <CodeEditor v-model="form.code" :lang="form.lang" />
+      </div>
 
-      <div v-if="evaluation" class="result">
+      <div v-if="evaluation" class="result panel rise-in" style="--enter-idx:3">
+        <div class="section-title"><span class="title-ico"><el-icon><DataLine /></el-icon></span>评测结果</div>
         <div class="result-header">
           <el-tag :type="evaluation.status === 'done' ? 'success' : 'warning'">{{ evaluation.status }}</el-tag>
           <span v-if="evaluation.status === 'done'" class="score">得分 {{ evaluation.score }}</span>
@@ -155,15 +170,15 @@ async function autoDiagnose() {
         </div>
       </div>
 
-      <!-- 自动诊断结果 -->
-      <div v-if="diagnosing" class="diagnose-loading">
+      <!-- 自动诊断加载 -->
+      <div v-if="diagnosing" class="diagnose-loading rise-in" style="--enter-idx:4">
         <el-icon class="is-loading"><Loading /></el-icon>
         <span>AI 正在诊断你的代码误区...</span>
       </div>
 
-      <div v-if="diagnosis" class="diagnosis-card">
+      <div v-if="diagnosis" class="diagnosis-card rise-in" style="--enter-idx:4">
         <div class="diag-head">
-          <span class="diag-badge">AI 误区诊断</span>
+          <span class="diag-badge"><el-icon style="margin-right: 4px"><MagicStick /></el-icon>AI 误区诊断</span>
           <span class="diag-confidence">{{ (diagnosis.confidence * 100).toFixed(0) }}%</span>
         </div>
         <div class="diag-body">
@@ -182,9 +197,11 @@ async function autoDiagnose() {
         </div>
         <div class="diag-actions">
           <el-button type="primary" size="small" @click="router.push(`/variant?submission=${submissionId}`)">
-            去做变式练习
+            <el-icon style="margin-right: 4px"><MagicStick /></el-icon>去做变式练习
           </el-button>
-          <el-button text size="small" @click="router.push('/my-submissions')">查看我的提交</el-button>
+          <el-button text size="small" @click="router.push('/my-submissions')">
+            <el-icon style="margin-right: 4px"><Document /></el-icon>查看我的提交
+          </el-button>
         </div>
       </div>
     </main>
@@ -192,98 +209,66 @@ async function autoDiagnose() {
 </template>
 
 <style scoped>
-.no-assignment {
-  text-align: center;
-  padding: 80px 0;
-  color: var(--galaxy-text-secondary);
-}
-.no-assignment a { color: var(--galaxy-accent); }
-
 .split-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-md);
   height: calc(100vh - 64px - 64px);
 }
 
 /* 左侧题目 */
-.problem-panel {
-  background: var(--galaxy-card);
-  border: 1px solid var(--galaxy-border);
-  border-radius: 8px;
-  padding: 24px;
-  overflow-y: auto;
-}
-.problem-panel h1 {
-  font-size: 22px;
-  margin: 0 0 12px;
-}
+.problem-panel { overflow-y: auto; }
+.problem-head { margin-bottom: var(--space-md); }
 .meta {
   display: flex;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
 }
-.section {
-  margin-bottom: 24px;
-}
-.section h3 {
-  font-size: 15px;
-  margin: 0 0 10px;
-  color: var(--galaxy-text);
-}
+.section { margin-bottom: var(--space-md); }
 .desc-text {
-  color: var(--galaxy-text-secondary);
+  color: var(--text-secondary);
   white-space: pre-wrap;
   line-height: 1.7;
-  font-size: 14px;
+  font-size: var(--fs-body);
 }
 .case-item {
-  background: var(--galaxy-bg);
-  border-radius: 6px;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   margin-bottom: 8px;
 }
 .case-name {
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--fs-body);
 }
 .case-item pre {
   margin: 6px 0 0;
   font-family: 'JetBrains Mono';
-  font-size: 12px;
-  color: var(--galaxy-text-secondary);
+  font-size: var(--fs-code);
+  color: var(--text-secondary);
 }
 
 /* 右侧代码 */
 .code-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 .code-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
 }
-.code-header-left { display: flex; align-items: center; gap: var(--space-sm); }
-.code-header h3 {
-  margin: 0;
-  font-size: var(--fs-body);
-}
+.code-header-left { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
 .code-header :deep(.code-editor) {
   height: 500px;
 }
 
 /* 评测结果 */
 .result {
-  background: var(--galaxy-card);
-  border: 1px solid var(--galaxy-border);
-  border-radius: 8px;
-  padding: 20px;
   max-height: 240px;
   overflow-y: auto;
 }
@@ -297,22 +282,22 @@ async function autoDiagnose() {
   font-family: 'Space Grotesk';
   font-size: 20px;
   font-weight: 700;
-  color: var(--galaxy-accent);
+  color: var(--primary);
 }
 .case-result {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 0;
-  border-bottom: 1px solid var(--galaxy-border);
-  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-body);
 }
-.case-result.fail { color: var(--galaxy-error); }
+.case-result.fail { color: var(--danger); }
 .case-icon { font-weight: 700; }
 .case-err {
-  color: var(--galaxy-error);
+  color: var(--danger);
   font-family: 'JetBrains Mono';
-  font-size: 12px;
+  font-size: var(--fs-code);
 }
 
 /* 诊断加载 */
@@ -320,16 +305,16 @@ async function autoDiagnose() {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px;
-  color: var(--galaxy-text-secondary);
-  font-size: 14px;
+  padding: var(--space-md);
+  color: var(--text-secondary);
+  font-size: var(--fs-body);
 }
 
 /* AI 诊断卡片 */
 .diagnosis-card {
-  background: linear-gradient(135deg, rgba(91, 127, 255, 0.06), rgba(91, 127, 255, 0.01));
-  border: 1px solid var(--galaxy-border);
-  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(79, 124, 255, 0.06), rgba(79, 124, 255, 0.01));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .diag-head {
@@ -337,36 +322,36 @@ async function autoDiagnose() {
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
-  border-bottom: 1px solid var(--galaxy-border);
+  border-bottom: 1px solid var(--border);
 }
 .diag-badge {
   font-size: 13px;
   font-weight: 600;
-  color: var(--galaxy-accent);
-  background: var(--galaxy-accent-soft);
+  color: var(--primary);
+  background: rgba(79, 124, 255, 0.10);
   padding: 3px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .diag-confidence {
   font-family: 'Space Grotesk';
   font-weight: 700;
   font-size: 16px;
-  color: var(--galaxy-text-secondary);
+  color: var(--text-secondary);
 }
 .diag-body { padding: 16px 20px; }
 .diag-row { margin-bottom: 12px; }
 .diag-row:last-child { margin-bottom: 0; }
 .diag-label {
   display: block;
-  font-size: 12px;
-  color: var(--galaxy-text-tertiary);
+  font-size: var(--fs-caption);
+  color: var(--text-placeholder);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
 }
-.diag-value { font-size: 15px; font-weight: 600; }
-.diag-value.accent { color: var(--galaxy-accent); font-size: 17px; }
-.diag-text { font-size: 14px; line-height: 1.6; margin: 0; color: var(--galaxy-text); }
+.diag-value { font-size: 15px; font-weight: 600; color: var(--ink); }
+.diag-value.accent { color: var(--primary); font-size: 17px; }
+.diag-text { font-size: var(--fs-body); line-height: 1.6; margin: 0; color: var(--ink-2); }
 .diag-actions { padding: 12px 20px; display: flex; gap: 8px; }
 
 /* 响应式：窄屏改上下布局 */

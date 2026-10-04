@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -19,6 +20,7 @@ class CheatingReportOut(BaseModel):
     check_type: str
     score: float
     detail: str
+    meta: Optional[dict] = None
     status: str
     created_at: datetime
 
@@ -31,5 +33,6 @@ class CheatingDomain:
     check_type: str
     score: float
     detail: str
+    meta: Optional[dict]
     status: str
     created_at: datetime

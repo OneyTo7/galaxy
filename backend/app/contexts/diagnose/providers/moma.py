@@ -12,7 +12,8 @@ from app.core.config import settings
 
 _SYSTEM = (
     "你是编程教学误区诊断专家。读取学生代码、编译/运行报错、用例通过情况，"
-    "输出结构化结果。evidence 必须引用真实报错或失败用例，禁止编造。只输出 JSON。"
+    "输出结构化结果。evidence 必须引用真实报错或失败用例，禁止编造。"
+    "knowledge_point_code 必须从输入提供的受控知识点编码列表中选择，不得编造。只输出 JSON。"
 )
 
 _parser = PydanticOutputParser(pydantic_object=GenerateResult)
@@ -25,6 +26,18 @@ _PROMPT = ChatPromptTemplate.from_messages(
 
 
 class MoMAProvider:
+    def __init__(self, taxonomy_provider=None) -> None:
+        # callable() -> list[str]：惰性取当前受控 code 列表注入 prompt
+        self._taxonomy_provider = taxonomy_provider
+
+    def _available_codes(self) -> list[str]:
+        if self._taxonomy_provider:
+            try:
+                return list(self._taxonomy_provider())
+            except Exception:
+                return []
+        return []
+
     async def diagnose(
         self,
         code: str,
@@ -46,19 +59,22 @@ class MoMAProvider:
             return GenerateResult(
                 misconception_type="边界条件遗漏",
                 evidence=evidence,
-                knowledge_point="数组边界 / 循环终止条件",
+                knowledge_point="循环边界条件",
+                knowledge_point_code="loop-boundary",
                 confidence=0.80,
             )
         return GenerateResult(
             misconception_type="无明显误区",
             evidence="全部用例通过",
             knowledge_point="—",
+            knowledge_point_code="",
             confidence=0.90,
         )
 
     async def _call_moma(
         self, code, lang, compile_error, run_errors, test_results
     ) -> GenerateResult:
+        codes = self._available_codes()
         user = json.dumps(
             {
                 "code": code,
@@ -66,6 +82,7 @@ class MoMAProvider:
                 "compile_error": compile_error,
                 "run_errors": run_errors,
                 "test_results": test_results,
+                "available_knowledge_point_codes": codes,
             },
             ensure_ascii=False,
         )

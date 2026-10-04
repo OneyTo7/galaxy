@@ -11,7 +11,8 @@ class Assignment(Base):
     __tablename__ = "assignments"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    teacher_id: Mapped[int] = mapped_column(Integer, index=True)
+    # formal 作业的属主教师；practice 作业（系统生成变式）可为 null
+    teacher_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
     course_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("courses.id", ondelete="SET NULL"), nullable=True, index=True
     )
@@ -24,6 +25,9 @@ class Assignment(Base):
         DateTime(timezone=True), nullable=True
     )
     status: Mapped[str] = mapped_column(String(16), default="draft")
+    # D3: 正式作业 vs 变式练习。practice 作业不挂课程（绕开选课校验），assigned_user_id 指向目标学生。
+    kind: Mapped[str] = mapped_column(String(16), default="formal")
+    assigned_user_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

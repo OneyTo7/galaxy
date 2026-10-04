@@ -30,6 +30,8 @@ def _to_out(d: AssignmentDomain) -> AssignmentOut:
         scoring_rubric=d.scoring_rubric,
         reference_code=d.reference_code,
         status=d.status,
+        kind=d.kind,
+        assigned_user_id=d.assigned_user_id,
         created_at=d.created_at,
         test_cases=[
             TestCaseOut(
@@ -86,6 +88,14 @@ async def list_published(
     svc: AssignmentService = Depends(get_assignment_service),
 ) -> list[AssignmentOut]:
     return [_to_out(d) for d in svc.list_published()]
+
+
+@router.get("/practice/mine", response_model=list[AssignmentOut])
+async def list_my_practice(
+    user: CurrentUser = Depends(get_current_user),
+    svc: AssignmentService = Depends(get_assignment_service),
+) -> list[AssignmentOut]:
+    return [_to_out(d) for d in svc.list_practice_for_user(user.id)]
 
 
 @router.get("/{assignment_id}", response_model=AssignmentOut)

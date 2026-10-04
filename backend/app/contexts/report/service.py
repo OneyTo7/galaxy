@@ -4,12 +4,14 @@ from collections import Counter
 
 from app.contexts.assignment.service import AssignmentService
 from app.contexts.diagnose.service import DiagnoseService
+from app.contexts.mastery.service import MasteryService
 from app.contexts.organization.service import OrganizationService
 from app.contexts.report.schemas import (
     ClassReport,
     CourseReport,
     KnowledgeStat,
     LearningReport,
+    MasterySummaryItem,
     MisconceptionStat,
     StudentStat,
 )
@@ -25,11 +27,13 @@ class ReportService:
         assignment_svc: AssignmentService,
         submission_svc: SubmissionService,
         diagnose_svc: DiagnoseService,
+        mastery_svc: MasteryService | None = None,
     ) -> None:
         self._org_svc = org_svc
         self._assignment_svc = assignment_svc
         self._submission_svc = submission_svc
         self._diagnose_svc = diagnose_svc
+        self._mastery_svc = mastery_svc
 
     def get_assignment_report(self, assignment_id: int, user: CurrentUser) -> LearningReport:
         assignment = self._assignment_svc.get(assignment_id)
@@ -67,6 +71,7 @@ class ReportService:
                 KnowledgeStat(knowledge_point=p, count=c)
                 for p, c in know_counter.most_common()
             ],
+            mastery_summary=self._mastery_summary(assignment_id),
             students=students,
         )
 
@@ -162,3 +167,11 @@ class ReportService:
             ],
             students=list(students_map.values()),
         )
+
+    def _mastery_summary(self, assignment_id: int) -> list[MasterySummaryItem]:
+        if not self._mastery_svc:
+            return []
+        return [
+            MasterySummaryItem(**item)
+            for item in self._mastery_svc.assignment_mastery_summary(assignment_id)
+        ]

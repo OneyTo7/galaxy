@@ -13,6 +13,16 @@ class KnowledgeStat(BaseModel):
     count: int
 
 
+class MasterySummaryItem(BaseModel):
+    knowledge_point_id: int
+    code: str
+    name: str
+    category: str
+    avg_mastery: float
+    student_count: int
+    at_risk_count: int
+
+
 class StudentStat(BaseModel):
     user_id: int
     score: int
@@ -25,6 +35,7 @@ class LearningReport(BaseModel):
     avg_score: float
     misconception_stats: list[MisconceptionStat] = []
     knowledge_stats: list[KnowledgeStat] = []
+    mastery_summary: list[MasterySummaryItem] = []
     students: list[StudentStat] = []
 
 

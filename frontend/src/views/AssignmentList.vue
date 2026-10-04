@@ -60,20 +60,26 @@ onMounted(load)
 <template>
   <div class="page">
     <div class="page-header">
-      <div>
-        <h1>{{ auth.role === 'teacher' ? '我的作业' : '可提交的作业' }}</h1>
-        <p class="page-desc" v-if="auth.role === 'teacher'">AI 生成的作业默认为草稿，点击「发布」后学生可见。</p>
-        <p class="page-desc" v-else>点击「去做」进入代码编辑器提交作业。</p>
+      <div class="page-title-with-chip">
+        <span class="page-title-chip"><el-icon><Document /></el-icon></span>
+        <div>
+          <h1>{{ auth.role === 'teacher' ? '我的作业' : '可提交的作业' }}</h1>
+          <p class="page-desc" v-if="auth.role === 'teacher'">AI 生成的作业默认为草稿，点击「发布」后学生可见。</p>
+          <p class="page-desc" v-else>点击「去做」进入代码编辑器提交作业。</p>
+        </div>
       </div>
-      <el-button v-if="auth.role === 'teacher'" type="primary" @click="router.push('/assignment-generate')">AI 命题</el-button>
+      <el-button v-if="auth.role === 'teacher'" type="primary" @click="router.push('/assignment-generate')">
+        <el-icon style="margin-right: 4px"><MagicStick /></el-icon>AI 命题
+      </el-button>
     </div>
 
-    <div v-if="!loading && assignments.length === 0" class="empty-state">
-      <p class="empty-text">暂无作业</p>
+    <div v-if="!loading && assignments.length === 0" class="empty-state-v2 rise-in" style="--enter-idx:0">
+      <div class="empty-ico"><el-icon><Document /></el-icon></div>
+      <p>暂无作业</p>
     </div>
 
     <div class="cards-grid">
-      <div v-for="a in assignments" :key="a.id" class="assign-card">
+      <div v-for="(a, idx) in assignments" :key="a.id" class="panel assign-card rise-in" :style="{ '--enter-idx': idx }">
         <div class="card-head">
           <h3>{{ a.title }}</h3>
           <el-tag v-if="auth.role === 'teacher'" :type="a.status === 'published' ? 'success' : 'info'" size="small">
@@ -86,10 +92,18 @@ onMounted(load)
           <span>{{ a.test_cases?.length || 0 }} 个用例</span>
         </div>
         <div class="card-actions">
-          <el-button size="small" @click="showDetail(a)">查看详情</el-button>
-          <el-button v-if="auth.role === 'teacher' && a.status !== 'published'" type="primary" size="small" @click="handlePublish(a.id)">发布</el-button>
-          <el-button v-if="auth.role === 'teacher'" type="danger" size="small" @click="handleDelete(a.id)">删除</el-button>
-          <el-button v-if="auth.role === 'student'" type="primary" size="small" @click="goToSubmit(a.id)">去做</el-button>
+          <el-button size="small" @click="showDetail(a)">
+            <el-icon style="margin-right: 4px"><View /></el-icon>查看详情
+          </el-button>
+          <el-button v-if="auth.role === 'teacher' && a.status !== 'published'" type="primary" size="small" @click="handlePublish(a.id)">
+            <el-icon style="margin-right: 4px"><Promotion /></el-icon>发布
+          </el-button>
+          <el-button v-if="auth.role === 'teacher'" type="danger" size="small" @click="handleDelete(a.id)">
+            <el-icon style="margin-right: 4px"><Delete /></el-icon>删除
+          </el-button>
+          <el-button v-if="auth.role === 'student'" type="primary" size="small" @click="goToSubmit(a.id)">
+            <el-icon style="margin-right: 4px"><Edit /></el-icon>去做
+          </el-button>
         </div>
       </div>
     </div>
@@ -101,11 +115,11 @@ onMounted(load)
           <el-tag size="small" type="info">{{ detailAssignment.test_cases?.length || 0 }} 个用例</el-tag>
         </div>
         <div class="detail-section">
-          <h4>题目描述</h4>
+          <div class="section-title"><span class="title-ico"><el-icon><Document /></el-icon></span>题目描述</div>
           <p class="detail-text">{{ detailAssignment.description }}</p>
         </div>
         <div v-if="detailAssignment.test_cases?.length" class="detail-section">
-          <h4>测试用例</h4>
+          <div class="section-title"><span class="title-ico"><el-icon><List /></el-icon></span>测试用例</div>
           <div v-for="tc in detailAssignment.test_cases" :key="tc.id" class="detail-case">
             <span class="case-tag">{{ tc.is_hidden ? '🔒 隐藏' : '👁 公开' }}</span>
             <span class="case-name">{{ tc.name || '用例 ' + tc.id }}</span>
@@ -114,16 +128,18 @@ onMounted(load)
           </div>
         </div>
         <div v-if="detailAssignment.scoring_rubric" class="detail-section">
-          <h4>评分细则</h4>
+          <div class="section-title"><span class="title-ico"><el-icon><Histogram /></el-icon></span>评分细则</div>
           <p class="detail-text">{{ detailAssignment.scoring_rubric }}</p>
         </div>
         <div v-if="detailAssignment.reference_code && auth.role === 'teacher'" class="detail-section">
-          <h4>参考实现</h4>
+          <div class="section-title"><span class="title-ico"><el-icon><Reading /></el-icon></span>参考实现</div>
           <pre class="ref-code">{{ detailAssignment.reference_code }}</pre>
         </div>
       </div>
       <template #footer>
-        <el-button v-if="auth.role === 'student'" type="primary" @click="goToSubmit(detailAssignment!.id); detailVisible = false">去做这道题</el-button>
+        <el-button v-if="auth.role === 'student'" type="primary" @click="goToSubmit(detailAssignment!.id); detailVisible = false">
+          <el-icon style="margin-right: 4px"><Edit /></el-icon>去做这道题
+        </el-button>
         <el-button @click="detailVisible = false">关闭</el-button>
       </template>
     </el-dialog>
@@ -132,23 +148,17 @@ onMounted(load)
 
 <style scoped>
 .page { max-width: 100%; }
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-lg); }
-.page-desc { margin: 0; font-size: var(--fs-body); color: var(--text-secondary); }
-
-.empty-state { text-align: center; padding: var(--space-xl) 0; color: var(--text-secondary); }
 
 .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
-.assign-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-md); transition: all var(--duration) var(--ease); }
-.assign-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+.assign-card { display: flex; flex-direction: column; }
 .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs); }
-.card-head h3 { margin: 0; font-size: var(--fs-h3); }
-.card-desc { color: var(--text-secondary); font-size: var(--fs-body); line-height: 1.6; margin: 0 0 var(--space-sm); }
+.card-head h3 { margin: 0; font-size: var(--fs-h3); color: var(--ink); }
+.card-desc { color: var(--text-secondary); font-size: var(--fs-body); line-height: 1.6; margin: 0 0 var(--space-sm); flex: 1; }
 .card-meta { display: flex; gap: var(--space-md); font-size: var(--fs-caption); color: var(--text-placeholder); margin-bottom: var(--space-sm); }
-.card-actions { display: flex; gap: var(--space-xs); }
+.card-actions { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
 
 .detail-meta { display: flex; gap: var(--space-xs); margin-bottom: var(--space-md); }
 .detail-section { margin-bottom: var(--space-md); }
-.detail-section h4 { font-size: var(--fs-h3); font-weight: 500; margin: 0 0 var(--space-xs); }
 .detail-text { color: var(--text-secondary); white-space: pre-wrap; line-height: 1.6; font-size: var(--fs-body); }
 .detail-case { background: var(--bg-page); border-radius: var(--radius-md); padding: var(--space-sm); margin-bottom: var(--space-xs); }
 .case-tag { font-size: var(--fs-caption); color: var(--text-secondary); margin-right: var(--space-xs); }

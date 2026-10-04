@@ -45,6 +45,48 @@ class AssignmentService:
     def list_published(self) -> list[AssignmentDomain]:
         return self._repo.list_published()
 
+    def list_practice_for_user(self, user_id: int) -> list[AssignmentDomain]:
+        return self._repo.list_practice_for_user(user_id)
+
+    def create_practice(
+        self,
+        teacher_id: int | None,
+        title: str,
+        description: str,
+        lang: str,
+        cases: list[dict],
+        assigned_user_id: int,
+        knowledge_point_id: int | None = None,
+    ) -> AssignmentDomain:
+        """D3: 创建变式练习作业（不挂课程，自动 published）。
+        若提供 knowledge_point_id，则同步打 Q 矩阵标签，使提交后掌握度可追踪。"""
+        data = {
+            "course_id": None,
+            "title": title,
+            "description": description,
+            "lang": lang,
+            "scoring_rubric": "",
+            "reference_code": "",
+            "status": "published",
+            "kind": "practice",
+            "assigned_user_id": assigned_user_id,
+        }
+        test_cases = [
+            {
+                "name": tc.get("name", ""),
+                "input": tc.get("input", ""),
+                "expected_output": tc.get("expected_output", ""),
+                "is_hidden": tc.get("is_hidden", False),
+                "weight": tc.get("weight", 1),
+                "order": idx,
+            }
+            for idx, tc in enumerate(cases)
+        ]
+        domain = self._repo.create(teacher_id, data, test_cases)
+        if knowledge_point_id is not None:
+            self._repo.replace_assignment_tags(domain.id, [(knowledge_point_id, 1.0)])
+        return domain
+
     async def generate(self, teacher_id: int, course_id: int | None, prompt: str) -> AssignmentDomain:
         if course_id:
             course = self._org_svc.get_course(course_id)

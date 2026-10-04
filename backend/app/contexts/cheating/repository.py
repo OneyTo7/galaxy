@@ -8,7 +8,14 @@ from app.contexts.cheating.schemas import CheatingDomain
 
 class CheatingRepoProtocol:
     def create(
-        self, submission_id: int, student_id: int, check_type: str, score: float, detail: str, status: str
+        self,
+        submission_id: int,
+        student_id: int,
+        check_type: str,
+        score: float,
+        detail: str,
+        status: str,
+        meta: dict | None = None,
     ) -> CheatingDomain: ...
     def list_by_submission(self, submission_id: int) -> list[CheatingDomain]: ...
 
@@ -21,16 +28,17 @@ class SQLAlchemyCheatingRepo(CheatingRepoProtocol):
     def _to_domain(r: CheatingReport) -> CheatingDomain:
         return CheatingDomain(
             r.id, r.submission_id, r.student_id, r.check_type,
-            r.score, r.detail, r.status, r.created_at,
+            r.score, r.detail, r.meta, r.status, r.created_at,
         )
 
-    def create(self, submission_id, student_id, check_type, score, detail, status):
+    def create(self, submission_id, student_id, check_type, score, detail, status, meta=None):
         r = CheatingReport(
             submission_id=submission_id,
             student_id=student_id,
             check_type=check_type,
             score=score,
             detail=detail,
+            meta=meta,
             status=status,
         )
         self._db.add(r)

@@ -56,7 +56,7 @@ async function handleSubmitVariant() {
   submitting.value = true
   evaluation.value = null
   try {
-    const res = await submit(selectedSubmission.value.assignment_id, code.value, variant.value?.lang || 'python')
+    const res = await submit(variant.value?.practice_assignment_id || selectedSubmission.value.assignment_id, code.value, variant.value?.lang || 'python')
     ElMessage.success('已提交变式代码，等待评测...')
     startPolling(res.submission_id)
   } catch (e: any) {
@@ -97,23 +97,34 @@ onBeforeUnmount(() => { if (pollTimer) clearInterval(pollTimer) })
 <template>
   <div class="variant-page">
     <div class="header">
-      <h1>变式练习</h1>
-      <p class="desc">基于你的误区，AI 生成一道换情境的变式题，帮你对症练习同一个知识点。</p>
+      <div class="page-title-with-chip">
+        <span class="page-title-chip"><el-icon><MagicStick /></el-icon></span>
+        <div>
+          <h1>变式练习</h1>
+          <p class="desc">基于你的误区，AI 生成一道换情境的变式题，帮你对症练习同一个知识点。</p>
+        </div>
+      </div>
     </div>
 
     <div v-if="!variant" class="action-bar">
       <div class="input-group">
-        <span class="label">选择提交</span>
-        <el-select v-model="submissionId" placeholder="选择一条提交" style="width: 240px">
+        <span class="label"><el-icon><Document /></el-icon> 选择提交</span>
+        <el-select v-model="submissionId" placeholder="选择一条提交" style="width: 280px">
           <el-option v-for="s in submissions" :key="s.id" :label="`#${s.id} 作业${s.assignment_id} ${s.status} ${s.score}分`" :value="s.id" />
         </el-select>
       </div>
-      <el-button type="primary" :loading="loading" @click="handleGenerate">生成变式题</el-button>
+      <el-button type="primary" :loading="loading" @click="handleGenerate">
+        <el-icon style="margin-right: 4px"><MagicStick /></el-icon>生成变式题
+      </el-button>
     </div>
 
     <div v-if="variant" class="split-layout">
       <aside class="problem-panel">
-        <div class="variant-badge">AI 变式题</div>
+        <div class="variant-badge">AI 变式题 · {{ variant.difficulty === 'easy' ? '同型换数' : variant.difficulty === 'medium' ? '换情境' : '组合考点' }}</div>
+        <div class="difficulty-tag">
+          <el-tag size="small" :type="variant.difficulty === 'easy' ? 'success' : variant.difficulty === 'medium' ? 'warning' : 'danger'">{{ variant.difficulty }}</el-tag>
+          <span v-if="variant.practice_assignment_id" class="practice-hint">已生成可提交练习作业 #{{ variant.practice_assignment_id }}</span>
+        </div>
         <h2>{{ variant.title }}</h2>
         <p class="desc-text">{{ variant.description }}</p>
         <div v-if="variant.cases?.length" class="cases">
@@ -152,7 +163,9 @@ onBeforeUnmount(() => { if (pollTimer) clearInterval(pollTimer) })
             <span v-if="r.stderr" class="case-err">{{ r.stderr }}</span>
           </div>
           <div v-if="evaluation.status === 'done'" class="result-actions">
+            <div v-if="evaluation.score >= 60" class="overcome-hint">✅ 变式通过，对应误区将被标记为"已克服"，掌握度已更新</div>
             <el-button text size="small" @click="router.push('/my-submissions')">查看我的提交</el-button>
+            <el-button text size="small" @click="router.push('/my-grades')">查看我的掌握度</el-button>
           </div>
         </div>
       </main>
@@ -162,50 +175,58 @@ onBeforeUnmount(() => { if (pollTimer) clearInterval(pollTimer) })
 
 <style scoped>
 .variant-page { max-width: 1200px; }
-.header { margin-bottom: 32px; }
-.header h1 { font-family: 'Space Grotesk'; font-size: 28px; margin: 0 0 8px; }
-.desc { color: var(--galaxy-text-secondary); font-size: 15px; margin: 0; }
-.action-bar { display: flex; align-items: center; gap: 16px; }
-.input-group { display: flex; align-items: center; gap: 8px; }
-.label { font-size: 14px; color: var(--galaxy-text-secondary); }
+.header { margin-bottom: 28px; }
+.desc { color: var(--text-secondary); font-size: 14px; margin: 0; }
 
-.split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.action-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
+.input-group { display: flex; align-items: center; gap: 8px; }
+.label { font-size: 13px; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px; }
+.label .el-icon { font-size: 14px; color: var(--primary); }
+
+.split-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 18px; }
 .problem-panel {
-  background: var(--galaxy-card-solid); border: 1px solid var(--galaxy-border);
-  border-radius: 10px; padding: 24px; overflow-y: auto; max-height: calc(100vh - 220px);
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px 24px; overflow-y: auto; max-height: calc(100vh - 220px);
+  box-shadow: var(--shadow-1);
 }
 .variant-badge {
-  display: inline-block; font-size: 12px; color: var(--galaxy-accent);
-  background: var(--galaxy-accent-soft); padding: 4px 10px; border-radius: 4px; margin-bottom: 12px;
+  display: inline-block; font-size: 11px; font-weight: 600; color: var(--primary);
+  background: rgba(79, 124, 255, 0.10); padding: 3px 10px; border-radius: 4px; margin-bottom: 10px;
 }
-.problem-panel h2 { font-size: 20px; margin: 0 0 12px; }
-.desc-text { color: var(--galaxy-text-secondary); white-space: pre-wrap; line-height: 1.7; font-size: 14px; }
+.difficulty-tag { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.practice-hint { font-size: 12px; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px; }
+.practice-hint .el-icon { font-size: 13px; color: var(--success); }
+.overcome-hint { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: rgba(18, 183, 106, 0.08); border: 1px solid rgba(18, 183, 106, 0.28); border-radius: 8px; color: var(--success); font-size: 13px; margin-bottom: 12px; font-weight: 500; }
+.problem-panel h2 { font-size: 19px; margin: 0 0 12px; color: var(--ink); }
+.desc-text { color: var(--ink-2); white-space: pre-wrap; line-height: 1.7; font-size: 14px; }
 .cases, .points { margin-top: 20px; }
-.cases h3, .points h3 { font-size: 15px; margin: 0 0 10px; }
-.case-item { background: var(--galaxy-bg); border-radius: 6px; padding: 10px; margin-bottom: 8px; }
-.case-item pre { margin: 4px 0 0; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--galaxy-text-secondary); }
-.points ul { padding-left: 20px; color: var(--galaxy-text-secondary); }
+.cases h3, .points h3 { font-size: 13px; font-weight: 600; color: var(--ink); margin: 0 0 10px; }
+.case-item { background: var(--bg-sunken); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.case-item pre { margin: 4px 0 0; font-family: 'SF Mono', monospace; font-size: 12px; color: var(--ink-2); }
+.points ul { padding-left: 20px; color: var(--text-secondary); font-size: 13px; line-height: 1.8; }
 .back-link { margin-top: 20px; }
 
 .code-panel { display: flex; flex-direction: column; gap: 12px; }
 .code-header {
   display: flex; justify-content: space-between; align-items: center;
-  background: var(--galaxy-card-solid); border: 1px solid var(--galaxy-border);
-  border-radius: 8px; padding: 12px 20px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 20px;
+  box-shadow: var(--shadow-1);
 }
-.code-header h3 { margin: 0; font-size: 15px; }
+.code-header h3 { margin: 0; font-size: 14px; color: var(--ink); }
 
 .result {
-  background: var(--galaxy-card-solid); border: 1px solid var(--galaxy-border);
-  border-radius: 8px; padding: 16px; max-height: 200px; overflow-y: auto;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px; max-height: 240px; overflow-y: auto;
+  box-shadow: var(--shadow-1);
 }
-.result-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.score { font-family: 'Space Grotesk'; font-weight: 700; font-size: 18px; color: var(--galaxy-accent); }
-.case-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--galaxy-border); font-size: 14px; }
-.case-row.fail { color: var(--galaxy-error); }
+.result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.score { font-weight: 700; font-size: 18px; color: var(--primary); }
+.case-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.case-row.fail { color: var(--danger); }
 .case-icon { font-weight: 700; }
-.case-err { color: var(--galaxy-error); font-family: 'JetBrains Mono'; font-size: 12px; }
-.result-actions { margin-top: 12px; }
+.case-err { color: var(--danger); font-family: 'SF Mono', monospace; font-size: 11px; }
+.result-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
 
 @media (max-width: 900px) { .split-layout { grid-template-columns: 1fr; } }
 </style>

@@ -15,7 +15,7 @@ def _to_out(d: CheatingDomain) -> CheatingReportOut:
     return CheatingReportOut(
         id=d.id, submission_id=d.submission_id, student_id=d.student_id,
         check_type=d.check_type, score=d.score, detail=d.detail,
-        status=d.status, created_at=d.created_at,
+        meta=d.meta, status=d.status, created_at=d.created_at,
     )
 
 

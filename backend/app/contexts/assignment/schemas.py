@@ -41,7 +41,7 @@ class AssignmentUpdate(BaseModel):
 
 class AssignmentOut(BaseModel):
     id: int
-    teacher_id: int
+    teacher_id: Optional[int] = None
     course_id: Optional[int] = None
     title: str
     description: str
@@ -49,6 +49,8 @@ class AssignmentOut(BaseModel):
     scoring_rubric: str
     reference_code: str
     status: str
+    kind: str = "formal"
+    assigned_user_id: Optional[int] = None
     created_at: datetime
     test_cases: list[TestCaseOut] = []
 
@@ -77,6 +79,8 @@ class AssignmentDomain:
     reference_code: str
     status: str
     created_at: datetime
+    kind: str = "formal"
+    assigned_user_id: Optional[int] = None
     test_cases: list[TestCaseDomain] = field(default_factory=list)
 
 

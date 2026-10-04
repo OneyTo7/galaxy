@@ -38,25 +38,34 @@ onMounted(loadAssignments)
 </script>
 
 <template>
-  <div class="gradebook-page">
-    <div class="header">
-      <h1>成绩册</h1>
-      <p class="desc">选择作业，聚合学生最高分生成成绩册。</p>
+  <div class="page gradebook-page">
+    <div class="page-header">
+      <div class="page-title-with-chip">
+        <span class="page-title-chip"><el-icon><DataAnalysis /></el-icon></span>
+        <div>
+          <h1>成绩册</h1>
+          <p class="page-desc">选择作业，聚合学生最高分生成成绩册。</p>
+        </div>
+      </div>
     </div>
-    <div class="action-bar">
+
+    <div class="panel action-bar rise-in" style="--enter-idx:0">
       <el-select v-model="selectedId" placeholder="选择作业" style="width: 400px" :loading="loading">
         <el-option v-for="a in assignments" :key="a.id" :label="a.title" :value="a.id" />
       </el-select>
-      <el-button type="primary" :loading="loading" @click="handleGenerate">生成成绩册</el-button>
-      <el-button @click="loadGrades">刷新</el-button>
+      <el-button type="primary" :loading="loading" @click="handleGenerate"><el-icon style="margin-right:4px"><Promotion /></el-icon>生成成绩册</el-button>
+      <el-button @click="loadGrades"><el-icon style="margin-right:4px"><Refresh /></el-icon>刷新</el-button>
     </div>
-    <div v-if="!selectedId && assignments.length === 0" class="empty">
+
+    <div v-if="!selectedId && assignments.length === 0" class="empty-state-v2 rise-in" style="--enter-idx:1">
+      <span class="empty-ico"><el-icon><Document /></el-icon></span>
       <p>暂无作业</p>
     </div>
-    <div v-if="selectedId && !loading && grades.length === 0" class="empty">
+    <div v-if="selectedId && !loading && grades.length === 0" class="empty-state-v2 rise-in" style="--enter-idx:1">
+      <span class="empty-ico"><el-icon><Document /></el-icon></span>
       <p>暂无成绩数据，点击「生成成绩册」</p>
     </div>
-    <el-table v-if="grades.length" :data="grades" border stripe>
+    <el-table v-if="grades.length" :data="grades" border stripe class="rise-in" style="--enter-idx:2">
       <el-table-column prop="student_id" label="学生 ID" width="100" />
       <el-table-column prop="final_score" label="最终成绩" width="100">
         <template #default="{ row }">
@@ -70,12 +79,8 @@ onMounted(loadAssignments)
 
 <style scoped>
 .gradebook-page { max-width: 800px; }
-.header { margin-bottom: 32px; }
-.header h1 { font-family: 'Space Grotesk'; font-size: 28px; margin: 0 0 8px; }
-.desc { color: var(--galaxy-text-secondary); font-size: 15px; margin: 0; }
-.action-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-.empty { text-align: center; padding: 40px 0; color: var(--galaxy-text-secondary); }
-.score-cell { font-family: 'Space Grotesk'; font-weight: 700; }
-.score-cell.high { color: var(--galaxy-success); }
-.score-cell.low { color: var(--galaxy-error); }
+.action-bar { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-lg); }
+.score-cell { font-weight: 700; }
+.score-cell.high { color: var(--success); }
+.score-cell.low { color: var(--danger); }
 </style>

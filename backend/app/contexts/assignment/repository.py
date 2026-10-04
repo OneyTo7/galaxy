@@ -12,6 +12,7 @@ class AssignmentRepoProtocol:
     def list_by_teacher(self, teacher_id: int) -> list[AssignmentDomain]: ...
     def list_by_course(self, course_id: int) -> list[AssignmentDomain]: ...
     def list_published(self) -> list[AssignmentDomain]: ...
+    def list_practice_for_user(self, user_id: int) -> list[AssignmentDomain]: ...
     def update(self, assignment_id: int, data: dict) -> AssignmentDomain | None: ...
     def delete(self, assignment_id: int) -> bool: ...
 
@@ -31,6 +32,7 @@ class SQLAlchemyAssignmentRepo(AssignmentRepoProtocol):
         return AssignmentDomain(
             a.id, a.teacher_id, a.course_id, a.title, a.description, a.lang,
             a.scoring_rubric, a.reference_code, a.status, a.created_at,
+            a.kind, a.assigned_user_id,
             [self._tc_to_domain(tc) for tc in a.test_cases],
         )
 
@@ -49,7 +51,10 @@ class SQLAlchemyAssignmentRepo(AssignmentRepoProtocol):
     def list_by_teacher(self, teacher_id):
         rows = (
             self._db.query(Assignment)
-            .filter(Assignment.teacher_id == teacher_id)
+            .filter(
+                Assignment.teacher_id == teacher_id,
+                Assignment.kind == "formal",
+            )
             .order_by(Assignment.created_at.desc())
             .all()
         )
@@ -58,7 +63,10 @@ class SQLAlchemyAssignmentRepo(AssignmentRepoProtocol):
     def list_by_course(self, course_id):
         rows = (
             self._db.query(Assignment)
-            .filter(Assignment.course_id == course_id)
+            .filter(
+                Assignment.course_id == course_id,
+                Assignment.kind == "formal",
+            )
             .order_by(Assignment.created_at.desc())
             .all()
         )
@@ -67,7 +75,22 @@ class SQLAlchemyAssignmentRepo(AssignmentRepoProtocol):
     def list_published(self):
         rows = (
             self._db.query(Assignment)
-            .filter(Assignment.status == "published")
+            .filter(
+                Assignment.status == "published",
+                Assignment.kind == "formal",
+            )
+            .order_by(Assignment.created_at.desc())
+            .all()
+        )
+        return [self._to_domain(a) for a in rows]
+
+    def list_practice_for_user(self, user_id):
+        rows = (
+            self._db.query(Assignment)
+            .filter(
+                Assignment.kind == "practice",
+                Assignment.assigned_user_id == user_id,
+            )
             .order_by(Assignment.created_at.desc())
             .all()
         )

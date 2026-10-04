@@ -6,6 +6,8 @@ from app.contexts.assignment.deps import get_assignment_service
 from app.contexts.assignment.service import AssignmentService
 from app.contexts.diagnose.deps import get_diagnose_service
 from app.contexts.diagnose.service import DiagnoseService
+from app.contexts.mastery.deps import get_mastery_service
+from app.contexts.mastery.service import MasteryService
 from app.contexts.organization.deps import get_organization_service
 from app.contexts.organization.service import OrganizationService
 from app.contexts.report.service import ReportService
@@ -18,10 +20,12 @@ def get_report_service(
     assignment_svc: AssignmentService = Depends(get_assignment_service),
     submission_svc: SubmissionService = Depends(get_submission_service),
     diagnose_svc: DiagnoseService = Depends(get_diagnose_service),
+    mastery_svc: MasteryService = Depends(get_mastery_service),
 ) -> ReportService:
     return ReportService(
         org_svc=org_svc,
         assignment_svc=assignment_svc,
         submission_svc=submission_svc,
         diagnose_svc=diagnose_svc,
+        mastery_svc=mastery_svc,
     )

@@ -29,3 +29,8 @@ export async function generateAssignment(course_id: number | null, prompt: strin
   const res = await request.post('/assignments/generate', { course_id, prompt })
   return res.data
 }
+
+export async function listMyPractice() {
+  const res = await request.get('/assignments/practice/mine')
+  return res.data
+}

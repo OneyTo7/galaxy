@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { listMySubmissions } from '@/api/submission'
 import { listMyCourses, listCourseAssignments } from '@/api/organization'
-import type { SubmissionOut, AssignmentOut } from '@/types/api'
+import { getMyMastery } from '@/api/mastery'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { RadarChart } from 'echarts/charts'
+import { TooltipComponent } from 'echarts/components'
+import VChart from 'vue-echarts'
+import type { SubmissionOut, AssignmentOut, MasteryCellOut } from '@/types/api'
+
+use([CanvasRenderer, RadarChart, TooltipComponent])
 
 interface Course { id: number; name: string; code: string }
 
@@ -12,6 +20,7 @@ const courses = ref<Course[]>([])
 const selectedCourseId = ref<number | null>(null)
 const submissions = ref<SubmissionOut[]>([])
 const allAssignments = ref<AssignmentOut[]>([])
+const masteryPoints = ref<MasteryCellOut[]>([])
 const loading = ref(false)
 
 async function loadCourses() {
@@ -34,6 +43,11 @@ async function loadCourseData() {
     ])
     allAssignments.value = assigns.filter((a: AssignmentOut) => a.status === 'published')
     submissions.value = subs as SubmissionOut[]
+    // D2: 加载个人掌握度雷达
+    try {
+      const m = await getMyMastery(selectedCourseId.value)
+      masteryPoints.value = m.points
+    } catch (e) { console.error('掌握度加载失败', e) }
   } catch (e) { console.error('加载成绩失败', e) }
   finally { loading.value = false }
 }
@@ -52,6 +66,25 @@ const avgScore = computed(() => {
 })
 
 const completedCount = computed(() => gradeRows.value.filter(r => r.score !== null).length)
+
+// D2: 个人掌握度雷达
+const masteryRadar = computed(() => {
+  const pts = masteryPoints.value.filter(p => p.mastery !== null)
+  return {
+    tooltip: { backgroundColor: '#FFFFFF', borderColor: '#E5E9F2', textStyle: { color: '#1F2937' } },
+    radar: {
+      indicator: pts.map(p => ({ name: p.name, max: 1.0 })),
+      axisName: { color: '#6B7280', fontSize: 11 },
+      splitLine: { lineStyle: { color: '#E5E9F2' } },
+      splitArea: { areaStyle: { color: ['rgba(247,249,255,0.5)', 'rgba(255,255,255,0.5)'] } },
+      axisLine: { lineStyle: { color: '#E5E9F2' } },
+    },
+    series: [{ type: 'radar', data: [{ value: pts.map(p => p.mastery), itemStyle: { color: '#4F7CFF' }, areaStyle: { color: 'rgba(79,124,255,0.12)' }, lineStyle: { color: '#4F7CFF', width: 2 } }] }],
+  }
+})
+
+// D2: 已克服误区徽章数
+const overcomeCount = computed(() => masteryPoints.value.filter(p => p.status === 'mastered').length)
 
 onMounted(loadCourses)
 </script>
@@ -82,6 +115,15 @@ onMounted(loadCourses)
           <span class="stat-num">{{ avgScore }}</span>
           <span class="stat-label">平均分</span>
         </div>
+        <div class="stat-card">
+          <span class="stat-num overcome">{{ overcomeCount }}</span>
+          <span class="stat-label">已掌握知识点</span>
+        </div>
+      </div>
+
+      <div v-if="masteryPoints.length" class="card chart-card">
+        <h3>我的知识点掌握度</h3>
+        <v-chart class="chart" :option="masteryRadar" autoresize />
       </div>
 
       <div class="card">
@@ -123,6 +165,10 @@ onMounted(loadCourses)
 .stat-label { font-size: var(--fs-caption); color: var(--text-secondary); display: block; margin-top: 4px; }
 
 .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-sm); box-shadow: var(--shadow-card); }
+.chart-card { padding: var(--space-md); margin-bottom: var(--space-md); }
+.chart-card h3 { margin: 0 0 var(--space-sm); font-size: var(--fs-h3, 16px); }
+.chart { height: 300px; }
+.overcome { color: var(--success, #34D399); }
 .score-cell { font-weight: 700; }
 .score-cell.high { color: var(--success); }
 .score-cell.low { color: var(--danger); }

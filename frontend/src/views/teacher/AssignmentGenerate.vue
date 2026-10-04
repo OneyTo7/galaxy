@@ -43,11 +43,16 @@ onMounted(loadCourses)
 <template>
   <div class="page">
     <div class="page-header">
-      <h1>AI 命题</h1>
-      <p class="page-desc">用一句话描述你要出的题，AI 自动生成题面、测试用例、评分细则和参考实现。</p>
+      <div class="page-title-with-chip">
+        <span class="page-title-chip"><el-icon><MagicStick /></el-icon></span>
+        <div>
+          <h1>AI 命题</h1>
+          <p class="page-desc">用一句话描述你要出的题，AI 自动生成题面、测试用例、评分细则和参考实现。</p>
+        </div>
+      </div>
     </div>
 
-    <div class="card input-card">
+    <div class="panel input-card rise-in" style="--enter-idx:0">
       <el-input v-model="prompt" type="textarea" :rows="3" placeholder="描述你要出的题，如：出一道考察数组边界的入门题" />
       <div class="examples">
         <span class="examples-label">试试：</span>
@@ -60,11 +65,11 @@ onMounted(loadCourses)
             <el-option v-for="c in courses" :key="c.id" :label="`${c.name} (${c.code})`" :value="c.id" />
           </el-select>
         </div>
-        <el-button type="primary" :loading="loading" @click="handleGenerate">生成作业</el-button>
+        <el-button type="primary" :loading="loading" @click="handleGenerate"><el-icon style="margin-right:4px"><Promotion /></el-icon>生成作业</el-button>
       </div>
     </div>
 
-    <div v-if="result" class="card result-card">
+    <div v-if="result" class="panel result-card rise-in" style="--enter-idx:1">
       <div class="result-head">
         <h2>{{ result.title }}</h2>
         <div class="tags">
@@ -74,11 +79,11 @@ onMounted(loadCourses)
         </div>
       </div>
       <div class="result-section">
-        <h3>题面</h3>
+        <div class="section-title"><span class="title-ico"><el-icon><Document /></el-icon></span>题面</div>
         <p class="desc-text">{{ result.description }}</p>
       </div>
       <div v-if="result.test_cases?.length" class="result-section">
-        <h3>测试用例</h3>
+        <div class="section-title"><span class="title-ico"><el-icon><List /></el-icon></span>测试用例</div>
         <div v-for="tc in result.test_cases" :key="tc.id" class="tc-item">
           <span class="tc-icon">{{ tc.is_hidden ? '🔒' : '👁' }}</span>
           <span class="tc-name">{{ tc.name || '用例' }}</span>
@@ -87,16 +92,16 @@ onMounted(loadCourses)
         </div>
       </div>
       <div v-if="result.scoring_rubric" class="result-section">
-        <h3>评分细则</h3>
+        <div class="section-title"><span class="title-ico"><el-icon><Histogram /></el-icon></span>评分细则</div>
         <p class="desc-text">{{ result.scoring_rubric }}</p>
       </div>
       <div v-if="result.reference_code" class="result-section">
-        <h3>参考实现</h3>
+        <div class="section-title"><span class="title-ico"><el-icon><Reading /></el-icon></span>参考实现</div>
         <pre class="ref-code">{{ result.reference_code }}</pre>
       </div>
       <div class="result-actions">
-        <el-button @click="router.push('/assignments')">去发布</el-button>
-        <el-button text @click="result = null">重新生成</el-button>
+        <el-button @click="router.push('/assignments')"><el-icon style="margin-right:4px"><Promotion /></el-icon>去发布</el-button>
+        <el-button text @click="result = null"><el-icon style="margin-right:4px"><Refresh /></el-icon>重新生成</el-button>
       </div>
     </div>
   </div>
@@ -105,9 +110,6 @@ onMounted(loadCourses)
 <style scoped>
 .page { max-width: 100%; }
 .page-header { margin-bottom: var(--space-lg); }
-.page-desc { margin: 0; font-size: var(--fs-body); color: var(--text-secondary); }
-
-.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-lg); }
 
 .examples { display: flex; align-items: center; gap: var(--space-xs); margin-top: var(--space-sm); flex-wrap: wrap; }
 .examples-label { font-size: var(--fs-caption); color: var(--text-secondary); }
@@ -120,10 +122,10 @@ onMounted(loadCourses)
 .tags { display: flex; gap: var(--space-xs); margin-top: var(--space-xs); }
 .result-section { margin-bottom: var(--space-md); }
 .desc-text { color: var(--text-secondary); white-space: pre-wrap; line-height: 1.6; font-size: var(--fs-body); }
-.tc-item { background: var(--bg-page); border-radius: var(--radius-md); padding: var(--space-sm); margin-bottom: var(--space-xs); }
+.tc-item { background: var(--bg-sunken); border-radius: var(--radius-md); padding: var(--space-sm); margin-bottom: var(--space-xs); }
 .tc-icon { margin-right: var(--space-xs); }
 .tc-name { font-weight: 500; font-size: var(--fs-body); }
 .tc-item pre { margin: var(--space-xs) 0 0; font-size: var(--fs-code); color: var(--text-secondary); }
-.ref-code { background: var(--bg-page); border-radius: var(--radius-md); padding: var(--space-sm); font-size: var(--fs-code); overflow-x: auto; }
+.ref-code { background: var(--bg-sunken); border-radius: var(--radius-md); padding: var(--space-sm); font-size: var(--fs-code); overflow-x: auto; }
 .result-actions { display: flex; gap: var(--space-xs); }
 </style>
