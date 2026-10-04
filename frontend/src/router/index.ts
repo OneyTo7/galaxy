@@ -21,6 +21,8 @@ const router = createRouter({
         { path: 'diagnose', name: 'diagnose', component: () => import('@/views/student/Diagnose.vue'), meta: { roles: ['student'] } },
         { path: 'variant', name: 'variant', component: () => import('@/views/student/Variant.vue'), meta: { roles: ['student'] } },
         { path: 'assignments', name: 'assignments', component: () => import('@/views/AssignmentList.vue') },
+        // 课程讲义（全部角色可看）
+        { path: 'lessons', name: 'lessons', component: () => import('@/views/student/Lessons.vue') },
         // 教师/助教专属
         { path: 'learning-report', name: 'learning-report', component: () => import('@/views/teacher/LearningDashboard.vue'), meta: { roles: ['teacher', 'assistant'] } },
         { path: 'assignment-generate', name: 'assignment-generate', component: () => import('@/views/teacher/AssignmentGenerate.vue'), meta: { roles: ['teacher'] } },

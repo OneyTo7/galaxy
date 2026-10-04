@@ -24,6 +24,7 @@ import app.contexts.cheating.models  # noqa: E402,F401
 import app.contexts.grade.models  # noqa: E402,F401
 import app.contexts.audit.models  # noqa: E402,F401
 import app.contexts.mastery.models  # noqa: E402,F401
+import app.contexts.lesson.models  # noqa: E402,F401
 
 config = context.config
 

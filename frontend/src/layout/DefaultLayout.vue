@@ -20,6 +20,7 @@ const displayName = computed(() => {
 const navItems = computed(() => {
   if (auth.role === 'student') return [
     { to: '/dashboard', label: '我的课程', icon: 'Monitor' },
+    { to: '/lessons', label: '课程讲义', icon: 'Reading' },
     { to: '/enroll', label: '选课', icon: 'Collection' },
     { to: '/my-submissions', label: '我的提交', icon: 'Document' },
     { to: '/my-grades', label: '我的成绩', icon: 'Trophy' },
@@ -29,6 +30,7 @@ const navItems = computed(() => {
   ]
   if (auth.role === 'teacher') return [
     { to: '/dashboard', label: '我的课程', icon: 'Monitor' },
+    { to: '/lessons', label: '课程讲义', icon: 'Reading' },
     { to: '/assignment-generate', label: 'AI 命题', icon: 'MagicStick' },
     { to: '/admin', label: '课程管理', icon: 'School' },
     { to: '/learning-report', label: '学情看板', icon: 'DataAnalysis' },

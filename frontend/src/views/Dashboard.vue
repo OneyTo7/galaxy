@@ -115,6 +115,9 @@ onMounted(loadCourses)
               <h2>{{ selectedCourse.name }}</h2>
               <span class="code-tag">{{ selectedCourse.code }}</span>
             </div>
+            <el-button size="small" @click="router.push(`/lessons?course=${selectedCourse.id}`)">
+              <el-icon style="margin-right:4px"><Reading /></el-icon>查看讲义
+            </el-button>
           </div>
 
           <div class="stat-grid">
