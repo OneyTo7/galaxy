@@ -2,25 +2,43 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { listLessons, getLesson, type LessonListItem, type LessonOut } from '@/api/lesson'
-import { ElMessage } from 'element-plus'
+import { listMyCourses } from '@/api/organization'
 
 const route = useRoute()
 const router = useRouter()
-const courseId = Number(route.query.course) || 0
 const lessons = ref<LessonListItem[]>([])
 const currentLesson = ref<LessonOut | null>(null)
 const selectedId = ref<number | null>(null)
 const loading = ref(false)
+const courses = ref<{ id: number; name: string; code: string }[]>([])
+const selectedCourseId = ref<number | null>(null)
+
+async function loadCourses() {
+  try {
+    // 教师看自己的课程，学生看已选课程（都有 listMyCourses 端点）
+    courses.value = await listMyCourses()
+    // 优先用 query 参数的 course
+    const qId = Number(route.query.course)
+    if (qId && courses.value.some(c => c.id === qId)) {
+      selectedCourseId.value = qId
+    } else if (courses.value.length > 0) {
+      selectedCourseId.value = courses.value[0].id
+    }
+  } catch (e) { console.error('加载课程列表失败', e) }
+}
+
+watch(selectedCourseId, (val) => {
+  if (val) loadLessons()
+})
 
 async function loadLessons() {
-  if (!courseId) {
-    ElMessage.warning('缺少课程参数')
-    router.back()
-    return
-  }
+  if (!selectedCourseId.value) return
   loading.value = true
+  lessons.value = []
+  currentLesson.value = null
+  selectedId.value = null
   try {
-    lessons.value = await listLessons(courseId)
+    lessons.value = await listLessons(selectedCourseId.value)
     if (lessons.value.length > 0) {
       selectLesson(lessons.value[0].id)
     }
@@ -40,20 +58,14 @@ async function selectLesson(id: number) {
 function renderMarkdown(md: string): string {
   if (!md) return ''
   let html = md
-    // 代码块
     .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="md-code-block"><code>$2</code></pre>')
-    // 标题
     .replace(/^### (.+)$/gm, '<h4 class="md-h4">$1</h4>')
     .replace(/^## (.+)$/gm, '<h3 class="md-h3">$1</h3>')
     .replace(/^# (.+)$/gm, '<h2 class="md-h2">$1</h2>')
-    // 行内代码
     .replace(/`([^`]+)`/g, '<code class="md-inline-code">$1</code>')
-    // 粗体
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    // 无序列表
     .replace(/^- (.+)$/gm, '<li>$1</li>')
     .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
-    // 段落（连续非标签行）
     .split('\n\n')
     .map(block => {
       if (block.startsWith('<')) return block
@@ -65,7 +77,7 @@ function renderMarkdown(md: string): string {
 
 const renderedContent = computed(() => renderMarkdown(currentLesson.value?.content || ''))
 
-onMounted(loadLessons)
+onMounted(loadCourses)
 </script>
 
 <template>
@@ -78,10 +90,26 @@ onMounted(loadLessons)
           <p class="page-desc">先看课本理解概念，再做对应练习题。</p>
         </div>
       </div>
-      <el-button @click="router.back()"><el-icon style="margin-right:4px"><Back /></el-icon>返回</el-button>
+      <el-select
+        v-model="selectedCourseId"
+        placeholder="选择课程"
+        style="width: 280px"
+      >
+        <el-option
+          v-for="c in courses"
+          :key="c.id"
+          :label="c.name"
+          :value="c.id"
+        />
+      </el-select>
     </div>
 
-    <div v-if="lessons.length === 0 && !loading" class="empty-state-v2">
+    <div v-if="courses.length === 0 && !loading" class="empty-state-v2">
+      <div class="empty-ico"><el-icon><Document /></el-icon></div>
+      <p>暂无课程</p>
+    </div>
+
+    <div v-else-if="lessons.length === 0 && !loading" class="empty-state-v2">
       <div class="empty-ico"><el-icon><Document /></el-icon></div>
       <p>该课程暂无章节内容</p>
     </div>
@@ -109,7 +137,7 @@ onMounted(loadLessons)
 
       <!-- 右侧内容 -->
       <main class="main-col">
-        <div v-if="currentLesson" class="panel lesson-panel rise-in">
+        <div v-if="currentLesson" class="panel lesson-panel rise-in" :key="currentLesson.id">
           <div class="lesson-header">
             <h2>{{ currentLesson.title }}</h2>
             <el-button
